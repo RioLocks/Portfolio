@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/projects/static/projects-styles.css">
+    <title>Stocks Analysis</title>
+</head>    
+    
+    <body>
+        <div class="container">
+            <header id="header">
+                <h1>Analyse des Composants d'un indice</h1>
+            </header>
+    
+            <section>
+                <h2>Introduction</h2>
+                <p>Ce projet a pour objectif d'analyser les composants de l'un indice, ici Nasdaq-100 en utilisant des 
+                    données fondamentales et plusieurs stratégies d'investissement. Les différentes étapes du projet 
+                    incluent la récupération des tickers des composants de l'indice, la collecte des données 
+                    fondamentales pour chaque ticker, et l'analyse de ces données selon diverses stratégies définies 
+                    dans un fichier JSON.
+                </p>
+            </section>
+    
+            <section>
+                <h2>Installation des Bibliothèques nécessaires et import</h2>
+                <p>Avant de commencer, assurez-vous d'installer les bibliothèques Python nécessaires en exécutant 
+                    la commande suivante :
+                </p>
+                <pre><code>pip install yfinance pandas requests scikit-learn</code></pre>
+                <p>Puis, il faut créer un fichier par exemple <code>app.py</code> et commencer par les importer :
+                    <pre><code>
+import yfinance as yf
+import pandas as pd
+import requests
+import json
+from sklearn.preprocessing import StandardScaler
+                    </code></pre>
+                </p>
+            </section>
+    
+            <section>
+                <h2>Récupération des Composants de l'indice</h2>
+                <p>La première étape consiste à récupérer les tickers des composants de l'indice choisi à 
+                    partir de Wikipedia ou tout plateforme les possédant :
+                    
+                    <pre><code>
+index = "Nasdaq-100"
+
+# Fonction pour obtenir les composants de l'indice à partir de Wikipedia
+def get_components():
+    url = "https://en.wikipedia.org/wiki/NASDAQ-100"
+    response = requests.get(url)
+    if response.status_code == 200:
+        tables = pd.read_html(response.text)
+        df = tables[4]
+        return df['Ticker'].tolist()
+    else:
+        print("Erreur lors de la récupération des composants de l'indice")
+        return []
+                    </code></pre>
+                    
+                    
+                    La fonction <code>get_components()</code> utilise la bibliothèque <code>
+                    requests</code> pour obtenir le contenu de la page Wikipedia et <code>pandas</code> pour 
+                    extraire les tickers des composants de la table correspondante.
+
+                    Le but c'est de changer le nom de la variable <code>index</code> pour le nom de l'indice. Il
+                    faudra cependant ne pas oublier de changer la variable <code>url</code> et le nom ou le numéro
+                    de la table du site depuis lequel vous obtiendrez les données. Ici stockée dans la variable
+                    <code>df</code>. <br><br>
+                    À la fin, la fonction retourne une liste contenant tous les tickers qui nous serviront à télécharger
+                    les données "en masse", nécessaires pour chaque ticker.
+                </p>
+            </section>
+    
+            <section>
+                <h2>Collecte des Données Fondamentales</h2>
+                <p>Pour chaque ticker, les fonctions <code>get_fundamental_data(ticker)</code> 
+                    et <code>collect_data(tickers)</code> utilise l'API de <code>yfinance</code> pour télécharger les données fondamentales. 
+                    Ces données incluent des informations générales sur chaque entreprise.
+                </p>
+
+                <pre><code>
+# Fonction pour télécharger les données fondamentales
+def get_fundamental_data(ticker):
+    stock = yf.Ticker(ticker)
+    
+    # Récupérer les informations générales
+    info = stock.info
+    
+    return {
+        'info': info
+    }
+
+# Fonction pour collecter les données fondamentales pour tous les tickers
+def collect_data(tickers):
+    data = []
+    for ticker in tickers:
+        try:
+            ticker_data = get_fundamental_data(ticker)
+            data.append((ticker, ticker_data))
+        except Exception as e:
+            print(f"Erreur lors de la collecte des données de {ticker}: {e}")
+    return data
+                </code></pre>
+                <p>
+                    La première fonction <code>get_fundamental_data(ticker)</code> prendra le ticker en entrée
+                    et fournira en retour un dictionnaire contenant les infos de celui-ci. Il faut savoir qu'il est possible
+                    d'obtenir d'autres données comme celles liées : 
+                    <ul>
+                        <li>Aux actions avec <code>stock.actions</code></li>
+                        <li>Aux dividendes avec <code>stock.dividends</code></li>
+                        <li>Données de marché (OHLCV) avec <code>stock.history</code></li>
+                        <li>Et bien d'autres données très intéressantes...</li>
+                    </ul>
+
+                    Afin d'avoir toutes les possibilités, je vous invite à consulter <a target="_blank" href="https://pypi.org/project/yfinance/">Yfinance</a>.
+                </p>
+                <p>
+                    La fonction <code>collect_data(tickers)</code> se servira de la première pour renvoyer pour chaque
+                    ticker, une liste contenant les données fondamentales.
+                </p>
+
+
+            </section>
+    
+            <section>
+                <h2>Analyse des Données Fondamentales</h2>
+                <p> Ici les choses deviennent intéressantes. Les données fondamentales collectées sont ensuite 
+                    analysées selon plusieurs critères définis dans des stratégies (nous y reviendrons plus tard). 
+                    
+                    <pre><code>
+# Fonction pour analyser les données fondamentales et attribuer un score selon une stratégie
+def analyze_fundamentals(data, strategy):
+    criteria_list = list(strategy.keys())
+    criteria_list.remove('objectif')
+    
+    rows = []
+    for ticker, ticker_data in data:
+        info = ticker_data['info']
+        row = {'Ticker': ticker}
+        for criterion in criteria_list:
+            row[criterion] = info.get(criterion, None)
+        rows.append(row)
+    
+    df = pd.DataFrame(rows, columns=['Ticker'] + criteria_list)
+    
+    # Remplacer les valeurs NaN par 0 ou une valeur par défaut
+    df.fillna(0, inplace=True)
+    
+    # Normaliser les critères (en utilisant StandardScaler pour les z-scores)
+    scaler = StandardScaler()
+    df[criteria_list] = scaler.fit_transform(df[criteria_list].astype(float))
+    
+    # Ajuster les poids des critères
+    weights = {criterion: weight for criterion, weight in strategy.items() if criterion != 'objectif'}
+    
+    # Calculer le score en pondérant les critères
+    df['Score'] = sum(df[criterion] * weight for criterion, weight in weights.items())
+    
+    return df
+                    </code></pre>
+                    
+                    La fonction <code>analyze_fundamentals(data, strategy)</code> normalise 
+                    les données, applique des poids aux différents critères et calcule un score pour chaque ticker 
+                    en fonction de la stratégie choisie.</p>
+            </section>
+    
+            <section>
+                <h2>Analyse Globale</h2>
+                <p>La fonction <code>global_analysis(strategies)</code> coordonne l'ensemble du processus en récupérant les tickers, 
+                    collectant les données et appliquant les différentes stratégies d'analyse. Les résultats de chaque stratégie 
+                    sont sauvegardés dans des fichiers CSV distincts.
+
+                    <pre><code>
+# Fonction principale pour analyser les composants de l'indice selon plusieurs stratégies
+def global_analysis(strategies):
+    tickers = get_components()
+    data = collect_data(tickers)
+    
+    for strategy_name, strategy in strategies.items():
+        result_df = analyze_fundamentals(data, strategy)
+        # Sauvegarder les résultats dans un fichier CSV par stratégie
+        result_df.to_csv(f'data/{index}/{strategy_name}.csv', index=False)
+        print(f"Résultats de l'analyse pour la stratégie '{strategy_name}' enregistrés dans {index}/{strategy_name}.csv")
+                    </code></pre>
+
+                </p>
+            </section>
+    
+            <section>
+                <h2>Stratégies d'Analyse</h2>
+                <p>Les stratégies d'analyse sont chargées à partir d'un fichier JSON situé à l'adresse 
+                    <code>data/utils/strategies.json</code> de notre dossier. Chaque stratégie spécifie des critères 
+                    et des poids différents pour l'analyse des données fondamentales
+                    <button id="showStrategiesBtn">Voir les Stratégies</button>.
+                </p>
+                <p>
+                    Bien-sûr il est possible de modifier les stratégies et les poids ou d'en rajouter pour les adapter à vos besoins.
+                    Ici, ce sont des stratégies effectuées sur la base de mes recherches <button id="openModalBtn">Voir les Données</button>.
+                </p>
+            </section>
+            
+            <!-- Modal pour afficher les stratégies -->
+            <div id="strategiesModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Stratégies d'Analyse</h2>
+                    <pre id="strategiesContent"></pre>
+                </div>
+            </div>
+
+            <!-- Modal pour afficher les données CSV -->
+            <div id="csvModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Données CSV</h2>
+                    <div class="table-responsive">
+                        <table border="1" class="dataframe table table-striped table-bordered">
+                            <thead>
+                              <tr style="text-align: right;">
+                                <th>Critère</th>
+                                <th>Description</th>
+                                <th>Interprétation</th>
+                                <th>Poids(ex)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>forwardPE (Price-to-Earnings Ratio)</td>
+                                <td>Le ratio cours/bénéfice à terme (forward PE) mesure le prix de l'action divisé par les bénéfices prévus par action. Il est utilisé pour évaluer si une action est surévaluée ou sous-évaluée par rapport à ses bénéfices futurs.</td>
+                                <td>- Un forward PE faible est généralement préféré car il peut indiquer que l'action est sous-évaluée.<br><br>- Un forward PE élevé peut être acceptable pour des entreprises à forte croissance où les bénéfices futurs sont attendus.</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un forward PE faible améliore le score, tandis qu'un forward PE élevé le diminue.<br><br>- Pour la croissance : 0 (neutre) - Un forward PE élevé peut être toléré si l'entreprise a un fort potentiel de croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>returnOnEquity (ROE)</td>
+                                <td>Le rendement des capitaux propres (ROE) mesure la rentabilité de l'entreprise par rapport aux fonds propres des actionnaires.</td>
+                                <td>- Un ROE élevé est un bon indicateur de la rentabilité et de l'efficacité de l'utilisation des fonds propres.<br><br>- Un ROE faible peut indiquer une entreprise en phase de croissance initiale qui réinvestit massivement dans ses opérations.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Un ROE élevé améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un ROE faible peut être toléré si l'entreprise est en phase de forte croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>grossMargins (Marge brute)</td>
+                                <td>La marge brute est le ratio entre le bénéfice brut et les revenus. Elle indique la proportion des revenus qui reste après déduction des coûts de production des biens vendus.</td>
+                                <td>- Une marge brute élevée est généralement préférée car elle indique une forte rentabilité des ventes.<br><br>- Une marge brute plus faible peut être acceptable dans des industries avec des volumes de ventes élevés et des coûts de production bas.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Une marge brute élevée améliore le score.<br><br>- Pour la croissance des revenus : 0 (neutre) - Une marge brute plus faible peut être tolérée si les revenus croissent rapidement.</td>
+                              </tr>
+                              <tr>
+                                <td>revenueGrowth (Croissance des revenus)</td>
+                                <td>La croissance des revenus mesure l'augmentation des ventes de l'entreprise sur une période donnée.</td>
+                                <td>- Une forte croissance des revenus est un indicateur positif de la capacité de l'entreprise à augmenter ses ventes et à capturer des parts de marché.<br><br>- Une croissance des revenus modérée peut être acceptable pour des entreprises matures avec une forte rentabilité.</td>
+                                <td>- Pour la croissance : 2 (positif) - Une forte croissance des revenus a un impact significatif et améliore fortement le score.<br><br>- Pour la rentabilité : 1 (positif) - Une croissance des revenus modérée est tolérée si l'entreprise est très rentable.</td>
+                              </tr>
+                              <tr>
+                                <td>debtToEquity (Ratio dette/capitaux propres)</td>
+                                <td>Le ratio dette/capitaux propres mesure la proportion de la dette utilisée pour financer les actifs de l'entreprise par rapport aux fonds propres.</td>
+                                <td>- Un ratio faible est généralement préféré car il indique que l'entreprise utilise moins de dette et est moins risquée.<br><br>- Un ratio élevé peut être acceptable si l'entreprise utilise la dette pour financer sa croissance et peut facilement couvrir ses paiements d'intérêts.</td>
+                                <td>- Pour la sécurité : -1 (négatif) - Un ratio faible améliore le score, tandis qu'un ratio élevé le diminue.<br><br>- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré si l'entreprise est en forte croissance et utilise efficacement la dette.</td>
+                              </tr>
+                              <tr>
+                                <td>freeCashflow (Flux de trésorerie disponible)</td>
+                                <td>Le flux de trésorerie disponible est l'argent généré par l'entreprise après avoir déduit les dépenses en capital nécessaires pour maintenir ou étendre ses actifs.</td>
+                                <td>- Un flux de trésorerie disponible élevé est un bon indicateur de la capacité de l'entreprise à générer des liquidités excédentaires.<br><br>- Un flux de trésorerie disponible faible peut être acceptable si l'entreprise réinvestit massivement pour sa croissance future.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Un flux de trésorerie disponible élevé améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un flux de trésorerie disponible faible peut être toléré si l'entreprise réinvestit pour sa croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>pegRatio (Price/Earnings to Growth Ratio)</td>
+                                <td>Le ratio PEG compare le ratio cours/bénéfice (PE) à la croissance des bénéfices. Il est utilisé pour évaluer si une action est surévaluée ou sous-évaluée en tenant compte de sa croissance des bénéfices.</td>
+                                <td>- Un ratio PEG faible est généralement préféré car il indique que l'action est sous-évaluée par rapport à sa croissance des bénéfices.<br><br>- Un ratio PEG élevé peut être acceptable pour des entreprises à forte croissance où les bénéfices futurs sont attendus.</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un ratio PEG faible améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un ratio PEG élevé peut être toléré si l'entreprise a un fort potentiel de croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>dividendYield (Rendement du dividende)</td>
+                                <td>Le rendement du dividende est le ratio entre le dividende annuel par action et le prix de l'action. Il est utilisé pour évaluer le retour sur investissement pour les actionnaires.</td>
+                                <td>- Un rendement du dividende élevé est généralement préféré car il indique un bon retour sur investissement pour les actionnaires.<br><br>- Un rendement du dividende faible ou nul peut être acceptable pour des entreprises en forte croissance qui réinvestissent leurs bénéfices.</td>
+                                <td>- Pour le rendement : 1 (positif) - Un rendement du dividende élevé améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un rendement du dividende faible ou nul peut être toléré si l'entreprise réinvestit pour sa croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>currentRatio (Ratio de liquidité courante)</td>
+                                <td>Le ratio de liquidité courante mesure la capacité de l'entreprise à couvrir ses passifs à court terme avec ses actifs à court terme.</td>
+                                <td>- Un ratio supérieur à 1 est généralement préféré car il indique que l'entreprise est capable de couvrir ses passifs à court terme.<br><br>- Un ratio inférieur à 1 peut être acceptable pour des entreprises avec des flux de trésorerie très stables.</td>
+                                <td>- Pour la sécurité : 1 (positif) - Un ratio de liquidité courante élevé améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un ratio inférieur à 1 peut être toléré si l'entreprise a des flux de trésorerie stables.</td>
+                              </tr>
+                              <tr>
+                                <td>priceToSalesTrailing12Months (P/S Ratio)</td>
+                                <td>Le ratio P/S compare le prix de l'action aux revenus par action sur les 12 derniers mois. Il est utilisé pour évaluer les entreprises à forte croissance.</td>
+                                <td>- Un ratio P/S faible est généralement préféré car il indique que l'action est sous-évaluée par rapport à ses revenus.<br><br>- Un ratio P/S élevé peut être acceptable pour des entreprises avec un potentiel de croissance exceptionnel.</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un ratio P/S faible améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Un ratio P/S élevé peut être toléré si l'entreprise a un potentiel de croissance exceptionnel.</td>
+                              </tr>
+                              <tr>
+                                <td>ebitdaMargins (Marge EBITDA)</td>
+                                <td>La marge EBITDA (bénéfice avant intérêts, impôts, dépréciation et amortissement) indique la rentabilité opérationnelle de l'entreprise.</td>
+                                <td>- Une marge EBITDA élevée est généralement préférée car elle indique une forte rentabilité opérationnelle.<br><br>- Une marge EBITDA plus faible peut être acceptable pour des entreprises en phase de croissance rapide avec des coûts élevés.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Une marge EBITDA élevée améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Une marge EBITDA plus faible peut être tolérée si l'entreprise est en phase de croissance rapide.</td>
+                              </tr>
+                              <tr>
+                                <td>Operating Margin (Marge opérationnelle)</td>
+                                <td>La marge opérationnelle mesure la rentabilité des opérations principales d'une entreprise avant les intérêts et les impôts.</td>
+                                <td>- Une marge opérationnelle élevée indique une bonne gestion des coûts et une forte rentabilité des opérations.<br><br>- Une marge opérationnelle plus faible peut être acceptable dans des industries avec des coûts d'exploitation élevés mais des volumes de ventes importants.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Une marge opérationnelle élevée améliore le score.<br><br>- Pour la croissance : 0 (neutre) - Une marge opérationnelle plus faible peut être tolérée dans des industries à volume élevé.</td>
+                              </tr>
+                              <tr>
+                                <td>Return on Assets (ROA)</td>
+                                <td>Le retour sur les actifs (ROA) mesure la rentabilité de l'entreprise par rapport à ses actifs totaux.</td>
+                                <td>- Un ROA élevé indique une utilisation efficace des actifs pour générer des bénéfices.<br><br>- Un ROA plus faible peut être acceptable pour des entreprises à forte intensité de capital.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Un ROA élevé est préféré car il indique une utilisation efficace des actifs.<br><br>- Pour la croissance : 0 (neutre) - Un ROA plus faible peut être toléré si l'entreprise est en forte croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Price-to-Book Ratio (P/B Ratio)</td>
+                                <td>Le ratio prix/valeur comptable (P/B) compare le prix de marché d'une action à sa valeur comptable par action.</td>
+                                <td>- Un ratio P/B faible peut indiquer que l'action est sous-évaluée par rapport à ses actifs.<br><br>- Un ratio P/B élevé peut être acceptable pour des entreprises avec des actifs incorporels importants (comme les marques et la propriété intellectuelle).</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un ratio P/B faible est préféré car il peut indiquer une action sous-évaluée.<br><br>- Pour la croissance : 0 (neutre) - Un ratio P/B élevé peut être toléré pour les entreprises à forte valeur immatérielle.</td>
+                              </tr>
+                              <tr>
+                                <td>Debt/EBITDA Ratio</td>
+                                <td>Le ratio dette/EBITDA mesure le niveau d'endettement d'une entreprise par rapport à son EBITDA.</td>
+                                <td>- Un ratio faible indique que l'entreprise a moins de dette par rapport à ses bénéfices opérationnels.<br><br>- Un ratio élevé peut être acceptable si l'entreprise peut facilement couvrir ses paiements d'intérêts.</td>
+                                <td>- Pour la sécurité : -1 (négatif) - Un ratio faible est préféré car il indique une moindre dépendance à la dette.<br><br>- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré si l'entreprise utilise efficacement la dette.</td>
+                              </tr>
+                              <tr>
+                                <td>Interest Coverage Ratio</td>
+                                <td>Le ratio de couverture des intérêts mesure la capacité de l'entreprise à couvrir ses frais d'intérêts avec ses bénéfices avant intérêts et impôts.</td>
+                                <td>- Un ratio élevé indique une bonne capacité à couvrir les frais d'intérêts, réduisant le risque financier.<br><br>- Un ratio faible peut indiquer un risque accru de défaut sur les paiements d'intérêts.</td>
+                                <td>- Pour la sécurité : 1 (positif) - Un ratio élevé est préféré car il montre une bonne couverture des frais d'intérêts.<br><br>- Pour la croissance : 0 (neutre) - Un ratio faible peut être acceptable si l'entreprise réinvestit pour sa croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Net Profit Margin</td>
+                                <td>La marge bénéficiaire nette mesure le pourcentage du revenu net par rapport au total des ventes.</td>
+                                <td>- Une marge bénéficiaire nette élevée indique une rentabilité globale élevée après toutes les dépenses.<br><br>- Une marge bénéficiaire nette plus faible peut être acceptable pour des entreprises en phase de croissance avec des dépenses élevées.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Une marge bénéficiaire nette élevée est un bon signe de rentabilité globale.<br><br>- Pour la croissance : 0 (neutre) - Une marge bénéficiaire nette plus faible peut être tolérée pour des entreprises en forte croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Quick Ratio</td>
+                                <td>Le ratio de liquidité immédiate mesure la capacité de l'entreprise à utiliser ses actifs les plus liquides pour rembourser ses passifs courants.</td>
+                                <td>- Un ratio supérieur à 1 est préféré, indiquant une bonne liquidité à court terme.<br><br>- Un ratio inférieur à 1 peut être acceptable pour des entreprises avec des flux de trésorerie très stables.</td>
+                                <td>- Pour la sécurité : 1 (positif) - Un ratio de liquidité immédiate élevé est préféré.<br><br>- Pour la croissance : 0 (neutre) - Un ratio inférieur à 1 peut être toléré pour des entreprises avec des flux de trésorerie stables.</td>
+                              </tr>
+                              <tr>
+                                <td>operatingCashFlow (OCF)</td>
+                                <td>Le flux de trésorerie opérationnel mesure la trésorerie générée par les opérations principales de l'entreprise.</td>
+                                <td>- Un OCF élevé est un bon indicateur de la capacité de l'entreprise à générer des liquidités.<br><br>- Un OCF faible peut être acceptable si l'entreprise réinvestit massivement pour sa croissance future.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Un flux de trésorerie opérationnel élevé est préféré.<br><br>- Pour la croissance : 0 (neutre) - Un flux de trésorerie opérationnel faible peut être toléré si l'entreprise réinvestit pour sa croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Price/Earnings to Sales Growth (PESG) Ratio</td>
+                                <td>Le ratio PESG compare le ratio P/E à la croissance des ventes.</td>
+                                <td>- Un ratio faible indique que l'action est sous-évaluée par rapport à la croissance des ventes.<br><br>- Un ratio élevé peut être acceptable pour des entreprises avec un potentiel de croissance exceptionnel.</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un ratio PESG faible est préféré.<br><br>- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré pour des entreprises avec un potentiel de croissance exceptionnel.</td>
+                              </tr>
+                              <tr>
+                                <td>Return on Capital Employed (ROCE)</td>
+                                <td>Le retour sur le capital employé mesure la rentabilité de l'entreprise par rapport au capital total employé.</td>
+                                <td>- Un ROCE élevé indique une utilisation efficace du capital pour générer des bénéfices.<br><br>- Un ROCE plus faible peut être acceptable pour des entreprises en phase de croissance initiale.</td>
+                                <td>- Pour la rentabilité : 1 (positif) - Un ROCE élevé est préféré.<br><br>- Pour la croissance : 0 (neutre) - Un ROCE plus faible peut être toléré si l'entreprise est en forte croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Enterprise Value/EBITDA (EV/EBITDA)</td>
+                                <td>Le ratio EV/EBITDA compare la valeur d'entreprise au bénéfice avant intérêts, impôts, dépréciation et amortissement.</td>
+                                <td>- Un ratio faible indique que l'entreprise est sous-évaluée par rapport à son EBITDA.<br><br>- Un ratio élevé peut être acceptable pour des entreprises à forte croissance où l'EBITDA futur est attendu.</td>
+                                <td>- Pour la valorisation : -1 (négatif) - Un ratio EV/EBITDA faible est préféré.<br><br>- Pour la croissance : 0 (neutre) - Un ratio EV/EBITDA élevé peut être toléré si l'entreprise a un fort potentiel de croissance.</td>
+                              </tr>
+                              <tr>
+                                <td>Beta (Volatilité de l'action)</td>
+                                <td>Le beta mesure la volatilité de l'action par rapport au marché global. Un beta supérieur à 1 indique que l'action est plus volatile que le marché, tandis qu'un beta inférieur à 1 indique que l'action est moins volatile.</td>
+                                <td>- Un beta élevé (supérieur à 1) peut indiquer une action plus risquée et plus volatile, ce qui peut être souhaitable pour les investisseurs tolérants au risque cherchant des rendements plus élevés.<br><br>- Un beta faible (inférieur à 1) indique une action moins volatile, ce qui peut être préférable pour les investisseurs recherchant la sécurité.</td>
+                                <td>- Pour la gestion du risque : 1 (positif) - Un beta élevé peut indiquer un risque élevé et doit être surveillé.<br><br>- Pour la sécurité : -1 (négatif) - Un beta faible est préféré car il indique une moindre volatilité.</td>
+                              </tr>
+                              <tr>
+                                <td>Dividend Payout Ratio</td>
+                                <td>Le ratio de distribution des dividendes mesure le pourcentage des bénéfices distribués aux actionnaires sous forme de dividendes. Il est calculé en divisant les dividendes totaux par le bénéfice net.</td>
+                                <td>- Un ratio de distribution élevé peut indiquer que l'entreprise retourne une grande partie de ses bénéfices aux actionnaires, ce qui peut être attractif pour les investisseurs axés sur le revenu.<br><br>- Un ratio de distribution trop élevé peut aussi signaler un manque de réinvestissement dans l'entreprise.</td>
+                                <td>- Pour le rendement : 1 (positif) - Un ratio de distribution élevé peut indiquer une bonne politique de dividendes.<br><br>- Pour la sécurité : 0 ou -1 (négatif) - Un ratio trop élevé peut indiquer un manque de réinvestissement et doit être surveillé.</td>
+                              </tr>
+                              <tr>
+                                <td>Cash Conversion Cycle (CCC)</td>
+                                <td>Le cycle de conversion de trésorerie mesure le temps nécessaire pour convertir les investissements en stocks et autres ressources en liquidités. Il est calculé en additionnant la durée moyenne des créances clients, la durée moyenne des stocks et en soustrayant la durée moyenne des dettes fournisseurs.</td>
+                                <td>- Un CCC court indique une gestion efficace des liquidités et une rapide conversion des stocks en ventes, ce qui est un bon signe de gestion financière.<br><br>- Un CCC long peut indiquer des inefficacités dans la gestion des stocks ou des créances.</td>
+                                <td>- Pour la sécurité : -1 (négatif) - Un CCC court est préféré car il indique une gestion efficace des liquidités.<br><br>- Pour la croissance : 1 (positif) - Un CCC long pourrait être toléré dans les entreprises à forte croissance, où l'investissement dans les stocks est stratégique.</td>
+                              </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    
+                </div>
+            </div>
+
+            <footer>
+                <a href="#header">Revenir au début</a>
+                <a href="http://">Voir le projet sur Github</a>
+            </footer>
+        </div>
+        <script src="/projects/static/projects-functions.js"></script>
+
+    </body>
+</html>

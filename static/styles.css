@@ -226,11 +226,16 @@ header.top-header.scrolled {
 }
 
 .skill {
-    width: calc(60% - 20px);
+    width: calc(40% - 20px);
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.skill:hover {
+    transform: scale(1.05);
 }
 
 .skill-summary {
@@ -277,69 +282,87 @@ header.top-header.scrolled {
 
 /* ------------------ Projets --------------------------- */
 
-.projects {
-    padding: 25px;
-    height: 100vh;
-}
 
-.projects h1{
+
+.projects h1 {
     text-align: center;
     font-size: 2rem;
     font-weight: 600;
-    padding-bottom: 30px;
     color: #333;
-    padding-top: 70px;
+    padding-top: 90px;
+    padding-bottom: 30px;
 }
 
-.project-list {
-    list-style: none;
-    padding: 0;
+.projects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 50px 0;
+    justify-content: center;
+    margin-left: 150px;
+    margin-right: 150px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 0 auto;
+    overflow: hidden;
+    transition: transform 0.2s;
+    width: 300px;
+    text-align: center;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.project-item {
-    margin-bottom: 30px;
-    width: calc(33.33% - 20px);
-    margin-right: 20px;
-    border: 1px solid #ddd; 
-    border-radius: 10px; 
-    padding: 20px; 
-    box-sizing: border-box; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: justify;
+.card:hover {
+    transform: scale(1.05);
 }
 
-.project-item h3 {
+.card img {
+    width: 100%;
+    height: 200px;
+}
+
+.card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-content h3 {
     margin-top: 0;
 }
 
-.project-item .project-link {
+.card-content p {
+    color: #777;
+    flex-grow: 1;
+}
+
+.card-content a {
     display: inline-block;
-    background-color: black;
-    color: white;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #333;
     padding: 10px 20px;
     border-radius: 5px;
-    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    width: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto; /* This ensures the button stays at the bottom */
 }
 
-.project-item .project-link:hover {
+.card-content a:hover {
     background-color: #333;
+    color: white;
 }
 
 
-@media screen and (max-width: 768px) {
-    .project-item {
-        width: calc(50% - 20px);
-    }
-}
 
-@media screen and (max-width: 480px) {
-    .project-item {
-        width: 100%;
-        margin-right: 0;
-    }
-}
+
 
 
 /* ------------------------------- Parcours et CV -------------------------------------- */

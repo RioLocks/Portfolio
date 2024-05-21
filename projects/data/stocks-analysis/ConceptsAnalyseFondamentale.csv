@@ -1,0 +1,126 @@
+Critère;Description;Interprétation;Poids(ex)
+forwardPE (Price-to-Earnings Ratio);Le ratio cours/bénéfice à terme (forward PE) mesure le prix de l'action divisé par les bénéfices prévus par action. Il est utilisé pour évaluer si une action est surévaluée ou sous-évaluée par rapport à ses bénéfices futurs.;"- Un forward PE faible est généralement préféré car il peut indiquer que l'action est sous-évaluée.
+
+- Un forward PE élevé peut être acceptable pour des entreprises à forte croissance où les bénéfices futurs sont attendus.";"- Pour la valorisation : -1 (négatif) - Un forward PE faible améliore le score, tandis qu'un forward PE élevé le diminue.
+
+- Pour la croissance : 0 (neutre) - Un forward PE élevé peut être toléré si l'entreprise a un fort potentiel de croissance."
+returnOnEquity (ROE);Le rendement des capitaux propres (ROE) mesure la rentabilité de l'entreprise par rapport aux fonds propres des actionnaires.;"- Un ROE élevé est un bon indicateur de la rentabilité et de l'efficacité de l'utilisation des fonds propres.
+
+- Un ROE faible peut indiquer une entreprise en phase de croissance initiale qui réinvestit massivement dans ses opérations.";"- Pour la rentabilité : 1 (positif) - Un ROE élevé améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un ROE faible peut être toléré si l'entreprise est en phase de forte croissance."
+grossMargins (Marge brute);La marge brute est le ratio entre le bénéfice brut et les revenus. Elle indique la proportion des revenus qui reste après déduction des coûts de production des biens vendus.;"- Une marge brute élevée est généralement préférée car elle indique une forte rentabilité des ventes.
+
+- Une marge brute plus faible peut être acceptable dans des industries avec des volumes de ventes élevés et des coûts de production bas.";"- Pour la rentabilité : 1 (positif) - Une marge brute élevée améliore le score.
+
+- Pour la croissance des revenus : 0 (neutre) - Une marge brute plus faible peut être tolérée si les revenus croissent rapidement."
+revenueGrowth (Croissance des revenus);La croissance des revenus mesure l'augmentation des ventes de l'entreprise sur une période donnée.;"- Une forte croissance des revenus est un indicateur positif de la capacité de l'entreprise à augmenter ses ventes et à capturer des parts de marché.
+
+- Une croissance des revenus modérée peut être acceptable pour des entreprises matures avec une forte rentabilité.";"- Pour la croissance : 2 (positif) - Une forte croissance des revenus a un impact significatif et améliore fortement le score.
+
+- Pour la rentabilité : 1 (positif) - Une croissance des revenus modérée est tolérée si l'entreprise est très rentable."
+debtToEquity (Ratio dette/capitaux propres);Le ratio dette/capitaux propres mesure la proportion de la dette utilisée pour financer les actifs de l'entreprise par rapport aux fonds propres.;"- Un ratio faible est généralement préféré car il indique que l'entreprise utilise moins de dette et est moins risquée.
+
+- Un ratio élevé peut être acceptable si l'entreprise utilise la dette pour financer sa croissance et peut facilement couvrir ses paiements d'intérêts.";"- Pour la sécurité : -1 (négatif) - Un ratio faible améliore le score, tandis qu'un ratio élevé le diminue.
+
+- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré si l'entreprise est en forte croissance et utilise efficacement la dette."
+freeCashflow (Flux de trésorerie disponible);Le flux de trésorerie disponible est l'argent généré par l'entreprise après avoir déduit les dépenses en capital nécessaires pour maintenir ou étendre ses actifs.;"- Un flux de trésorerie disponible élevé est un bon indicateur de la capacité de l'entreprise à générer des liquidités excédentaires.
+
+- Un flux de trésorerie disponible faible peut être acceptable si l'entreprise réinvestit massivement pour sa croissance future.";"- Pour la rentabilité : 1 (positif) - Un flux de trésorerie disponible élevé améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un flux de trésorerie disponible faible peut être toléré si l'entreprise réinvestit pour sa croissance."
+pegRatio (Price/Earnings to Growth Ratio);Le ratio PEG compare le ratio cours/bénéfice (PE) à la croissance des bénéfices. Il est utilisé pour évaluer si une action est surévaluée ou sous-évaluée en tenant compte de sa croissance des bénéfices.;"- Un ratio PEG faible est généralement préféré car il indique que l'action est sous-évaluée par rapport à sa croissance des bénéfices.
+
+- Un ratio PEG élevé peut être acceptable pour des entreprises à forte croissance où les bénéfices futurs sont attendus.";"- Pour la valorisation : -1 (négatif) - Un ratio PEG faible améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un ratio PEG élevé peut être toléré si l'entreprise a un fort potentiel de croissance."
+dividendYield (Rendement du dividende);Le rendement du dividende est le ratio entre le dividende annuel par action et le prix de l'action. Il est utilisé pour évaluer le retour sur investissement pour les actionnaires.;"- Un rendement du dividende élevé est généralement préféré car il indique un bon retour sur investissement pour les actionnaires.
+
+- Un rendement du dividende faible ou nul peut être acceptable pour des entreprises en forte croissance qui réinvestissent leurs bénéfices.";"- Pour le rendement : 1 (positif) - Un rendement du dividende élevé améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un rendement du dividende faible ou nul peut être toléré si l'entreprise réinvestit pour sa croissance."
+currentRatio (Ratio de liquidité courante);Le ratio de liquidité courante mesure la capacité de l'entreprise à couvrir ses passifs à court terme avec ses actifs à court terme.;"- Un ratio supérieur à 1 est généralement préféré car il indique que l'entreprise est capable de couvrir ses passifs à court terme.
+
+- Un ratio inférieur à 1 peut être acceptable pour des entreprises avec des flux de trésorerie très stables.";"- Pour la sécurité : 1 (positif) - Un ratio de liquidité courante élevé améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un ratio inférieur à 1 peut être toléré si l'entreprise a des flux de trésorerie stables."
+priceToSalesTrailing12Months (P/S Ratio);Le ratio P/S compare le prix de l'action aux revenus par action sur les 12 derniers mois. Il est utilisé pour évaluer les entreprises à forte croissance.;"- Un ratio P/S faible est généralement préféré car il indique que l'action est sous-évaluée par rapport à ses revenus.
+
+- Un ratio P/S élevé peut être acceptable pour des entreprises avec un potentiel de croissance exceptionnel.";"- Pour la valorisation : -1 (négatif) - Un ratio P/S faible améliore le score.
+
+- Pour la croissance : 0 (neutre) - Un ratio P/S élevé peut être toléré si l'entreprise a un potentiel de croissance exceptionnel."
+ebitdaMargins (Marge EBITDA); La marge EBITDA (bénéfice avant intérêts, impôts, dépréciation et amortissement) indique la rentabilité opérationnelle de l'entreprise.;"- Une marge EBITDA élevée est généralement préférée car elle indique une forte rentabilité opérationnelle.
+
+- Une marge EBITDA plus faible peut être acceptable pour des entreprises en phase de croissance rapide avec des coûts élevés.";"- Pour la rentabilité : 1 (positif) - Une marge EBITDA élevée améliore le score.
+
+- Pour la croissance : 0 (neutre) - Une marge EBITDA plus faible peut être tolérée si l'entreprise est en phase de croissance rapide."
+Operating Margin (Marge opérationnelle);La marge opérationnelle mesure la rentabilité des opérations principales d'une entreprise avant les intérêts et les impôts.;"- Une marge opérationnelle élevée indique une bonne gestion des coûts et une forte rentabilité des opérations.
+
+- Une marge opérationnelle plus faible peut être acceptable dans des industries avec des coûts d'exploitation élevés mais des volumes de ventes importants.";"- Pour la rentabilité : 1 (positif) - Une marge opérationnelle élevée améliore le score.
+
+- Pour la croissance : 0 (neutre) - Une marge opérationnelle plus faible peut être tolérée dans des industries à volume élevé."
+Return on Assets (ROA);Le retour sur les actifs (ROA) mesure la rentabilité de l'entreprise par rapport à ses actifs totaux.;"- Un ROA élevé indique une utilisation efficace des actifs pour générer des bénéfices.
+
+- Un ROA plus faible peut être acceptable pour des entreprises à forte intensité de capital.";"- Pour la rentabilité : 1 (positif) - Un ROA élevé est préféré car il indique une utilisation efficace des actifs.
+
+- Pour la croissance : 0 (neutre) - Un ROA plus faible peut être toléré si l'entreprise est en forte croissance."
+Price-to-Book Ratio (P/B Ratio);Le ratio prix/valeur comptable (P/B) compare le prix de marché d'une action à sa valeur comptable par action.;"- Un ratio P/B faible peut indiquer que l'action est sous-évaluée par rapport à ses actifs.
+
+- Un ratio P/B élevé peut être acceptable pour des entreprises avec des actifs incorporels importants (comme les marques et la propriété intellectuelle).";"- Pour la valorisation : -1 (négatif) - Un ratio P/B faible est préféré car il peut indiquer une action sous-évaluée.
+
+- Pour la croissance : 0 (neutre) - Un ratio P/B élevé peut être toléré pour les entreprises à forte valeur immatérielle."
+Debt/EBITDA Ratio;Le ratio dette/EBITDA mesure le niveau d'endettement d'une entreprise par rapport à son EBITDA.;"- Un ratio faible indique que l'entreprise a moins de dette par rapport à ses bénéfices opérationnels.
+
+- Un ratio élevé peut être acceptable si l'entreprise peut facilement couvrir ses paiements d'intérêts.";"- Pour la sécurité : -1 (négatif) - Un ratio faible est préféré car il indique une moindre dépendance à la dette.
+
+- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré si l'entreprise utilise efficacement la dette."
+Interest Coverage Ratio;Le ratio de couverture des intérêts mesure la capacité de l'entreprise à couvrir ses frais d'intérêts avec ses bénéfices avant intérêts et impôts.;"- Un ratio élevé indique une bonne capacité à couvrir les frais d'intérêts, réduisant le risque financier.
+
+- Un ratio faible peut indiquer un risque accru de défaut sur les paiements d'intérêts.";"- Pour la sécurité : 1 (positif) - Un ratio élevé est préféré car il montre une bonne couverture des frais d'intérêts.
+
+- Pour la croissance : 0 (neutre) - Un ratio faible peut être acceptable si l'entreprise réinvestit pour sa croissance."
+Net Profit Margin;La marge bénéficiaire nette mesure le pourcentage du revenu net par rapport au total des ventes.;"- Une marge bénéficiaire nette élevée indique une rentabilité globale élevée après toutes les dépenses.
+
+- Une marge bénéficiaire nette plus faible peut être acceptable pour des entreprises en phase de croissance avec des dépenses élevées.";"- Pour la rentabilité : 1 (positif) - Une marge bénéficiaire nette élevée est un bon signe de rentabilité globale.
+
+- Pour la croissance : 0 (neutre) - Une marge bénéficiaire nette plus faible peut être tolérée pour des entreprises en forte croissance."
+Quick Ratio;Le ratio de liquidité immédiate mesure la capacité de l'entreprise à utiliser ses actifs les plus liquides pour rembourser ses passifs courants.;"- Un ratio supérieur à 1 est préféré, indiquant une bonne liquidité à court terme.
+
+- Un ratio inférieur à 1 peut être acceptable pour des entreprises avec des flux de trésorerie très stables.";"- Pour la sécurité : 1 (positif) - Un ratio de liquidité immédiate élevé est préféré.
+
+- Pour la croissance : 0 (neutre) - Un ratio inférieur à 1 peut être toléré pour des entreprises avec des flux de trésorerie stables."
+operatingCashFlow (OCF);Le flux de trésorerie opérationnel mesure la trésorerie générée par les opérations principales de l'entreprise.;"- Un OCF élevé est un bon indicateur de la capacité de l'entreprise à générer des liquidités.
+
+- Un OCF faible peut être acceptable si l'entreprise réinvestit massivement pour sa croissance future.";"- Pour la rentabilité : 1 (positif) - Un flux de trésorerie opérationnel élevé est préféré.
+
+- Pour la croissance : 0 (neutre) - Un flux de trésorerie opérationnel faible peut être toléré si l'entreprise réinvestit pour sa croissance."
+Price/Earnings to Sales Growth (PESG) Ratio;Le ratio PESG compare le ratio P/E à la croissance des ventes.;"- Un ratio faible indique que l'action est sous-évaluée par rapport à la croissance des ventes.
+
+- Un ratio élevé peut être acceptable pour des entreprises avec un potentiel de croissance exceptionnel.";"- Pour la valorisation : -1 (négatif) - Un ratio PESG faible est préféré.
+
+- Pour la croissance : 0 (neutre) - Un ratio élevé peut être toléré pour des entreprises avec un potentiel de croissance exceptionnel."
+Return on Capital Employed (ROCE);Le retour sur le capital employé mesure la rentabilité de l'entreprise par rapport au capital total employé.;"- Un ROCE élevé indique une utilisation efficace du capital pour générer des bénéfices.
+
+- Un ROCE plus faible peut être acceptable pour des entreprises en phase de croissance initiale.";"- Pour la rentabilité : 1 (positif) - Un ROCE élevé est préféré.
+
+- Pour la croissance : 0 (neutre) - Un ROCE plus faible peut être toléré si l'entreprise est en forte croissance."
+Enterprise Value/EBITDA (EV/EBITDA);Le ratio EV/EBITDA compare la valeur d'entreprise au bénéfice avant intérêts, impôts, dépréciation et amortissement.;"- Un ratio faible indique que l'entreprise est sous-évaluée par rapport à son EBITDA.
+
+- Un ratio élevé peut être acceptable pour des entreprises à forte croissance où l'EBITDA futur est attendu.";"- Pour la valorisation : -1 (négatif) - Un ratio EV/EBITDA faible est préféré.
+
+- Pour la croissance : 0 (neutre) - Un ratio EV/EBITDA élevé peut être toléré si l'entreprise a un fort potentiel de croissance."
+Beta (Volatilité de l'action);Le beta mesure la volatilité de l'action par rapport au marché global. Un beta supérieur à 1 indique que l'action est plus volatile que le marché, tandis qu'un beta inférieur à 1 indique que l'action est moins volatile.;"- Un beta élevé (supérieur à 1) peut indiquer une action plus risquée et plus volatile, ce qui peut être souhaitable pour les investisseurs tolérants au risque cherchant des rendements plus élevés.
+
+- Un beta faible (inférieur à 1) indique une action moins volatile, ce qui peut être préférable pour les investisseurs recherchant la sécurité.";"- Pour la gestion du risque : 1 (positif) - Un beta élevé peut indiquer un risque élevé et doit être surveillé.
+
+- Pour la sécurité : -1 (négatif) - Un beta faible est préféré car il indique une moindre volatilité."
+Dividend Payout Ratio;Le ratio de distribution des dividendes mesure le pourcentage des bénéfices distribués aux actionnaires sous forme de dividendes. Il est calculé en divisant les dividendes totaux par le bénéfice net.;"- Un ratio de distribution élevé peut indiquer que l'entreprise retourne une grande partie de ses bénéfices aux actionnaires, ce qui peut être attractif pour les investisseurs axés sur le revenu.
+
+- Un ratio de distribution trop élevé peut aussi signaler un manque de réinvestissement dans l'entreprise.";"- Pour le rendement : 1 (positif) - Un ratio de distribution élevé peut indiquer une bonne politique de dividendes.
+
+- Pour la sécurité : 0 ou -1 (négatif) - Un ratio trop élevé peut indiquer un manque de réinvestissement et doit être surveillé."
+Cash Conversion Cycle (CCC);Le cycle de conversion de trésorerie mesure le temps nécessaire pour convertir les investissements en stocks et autres ressources en liquidités. Il est calculé en additionnant la durée moyenne des créances clients, la durée moyenne des stocks et en soustrayant la durée moyenne des dettes fournisseurs.;"- Un CCC court indique une gestion efficace des liquidités et une rapide conversion des stocks en ventes, ce qui est un bon signe de gestion financière.
+
+- Un CCC long peut indiquer des inefficacités dans la gestion des stocks ou des créances.";"- Pour la sécurité : -1 (négatif) - Un CCC court est préféré car il indique une gestion efficace des liquidités.
+
+- Pour la croissance : 1 (positif) - Un CCC long pourrait être toléré dans les entreprises à forte croissance, où l'investissement dans les stocks est stratégique."
