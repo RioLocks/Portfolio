@@ -13,14 +13,19 @@ html {
 
 section.top-page {
     background: url("/static/images/bg_cyber.png");
-    height: 100vh;
+    min-height: 100vh;
     background-size: cover;
     background-attachment: fixed;
 }
 
-.top-page-container{
+.top-page-container {
     background-color: #4241418c;
-    height: 100vh;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative; /* Assure que les enfants sont positionnés par rapport à ce conteneur */
 }
 
 header.top-header {
@@ -32,10 +37,10 @@ header.top-header {
     align-items: center;
     transition: background-color 0.8s ease;
     z-index: 500;
-    
+    top: 0;
 }
 
-header.top-header img{
+header.top-header img {
     margin-left: 25px;
 }
 
@@ -47,100 +52,163 @@ header.top-header.scrolled {
     display: flex;
     list-style: none;
     color: white;
-    margin-left: auto; 
-    justify-content: flex-end; 
+    margin-left: auto;
+    justify-content: flex-end;
     width: 400px;
     padding: 25px;
-    white-space: nowrap; 
+    white-space: nowrap;
 }
 
 .nav li {
     margin-inline: 10px;
-    position: relative; 
+    position: relative;
 }
 
 .nav li a {
     text-decoration: none;
     color: inherit;
-    font-size: 1rem; 
-    padding: 0.2rem 0.7rem; 
-    text-transform: uppercase; 
-    position: relative; 
-    transition: all 0.5s; 
+    font-size: 1rem;
+    padding: 0.2rem 0.7rem;
+    text-transform: uppercase;
+    position: relative;
+    transition: all 0.5s;
 }
-
 
 .nav li a:before,
 .nav li a:after {
-    content: ""; 
-    position: absolute; 
-    width: 10px; 
+    content: "";
+    position: absolute;
+    width: 10px;
     height: 10px;
     border: 3px solid white;
-    opacity: 0; 
-    transition: all 0.6s; 
+    opacity: 0;
+    transition: all 0.6s;
 }
 
 .nav li a:before {
-    bottom: 10px; 
-    left: 10px; 
-    border-width: 0 0 3px 3px; 
+    bottom: 10px;
+    left: 10px;
+    border-width: 0 0 3px 3px;
 }
 
 .nav li a:hover:before {
-    opacity: 1; 
-    bottom: -6px; 
-    left: -6px; 
+    opacity: 1;
+    bottom: -6px;
+    left: -6px;
 }
 
 .nav li a:after {
-    top: 0; 
-    right: 0; 
-    border-width: 3px 3px 0 0; 
+    top: 0;
+    right: 0;
+    border-width: 3px 3px 0 0;
 }
 
 .nav li a:hover:after {
-    opacity: 1; 
-    top: -6px; 
-    right: -6px; 
+    opacity: 1;
+    top: -6px;
+    right: -6px;
 }
 
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    margin-right: 25px;
+    margin-left: auto;
+    z-index: 500;
+    
+}
 
-.landing-page{
+.hamburger .bar {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 4px 0;
+    transition: all 0.3s;
+}
+
+.bar.scrolled{
+    background-color: #333;
+}
+
+.bar.active {
+    background-color: white; /* Couleur lorsque le hamburger est cliqué */
+}
+
+@media (max-width: 768px) {
+    .nav {
+        display: none;
+        flex-direction: column;
+        width: 50%;
+        background-color: #333333d8;
+        position: absolute;
+        top: 0px;
+        right: 0;
+        align-items: center;
+    }
+
+    .nav.show {
+        display: flex;
+    }
+
+    .nav li a:before,
+    .nav li a:after {
+        display: none; 
+    }
+
+
+    .nav li a:hover{
+        border-bottom: #ccc solid 1px;
+    }
+
+    header.top-header.scrolled {
+        background-color: transparent; 
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .nav li {
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav li a {
+        display: block;
+        width: 100%;
+        padding: 15px 0;
+    }
+
+    header.top-header {
+        padding: 10px;
+    }
+}
+
+.landing-page {
     padding: 25px;
     color: white;
-    padding-top: 150px;
 }
 
-.landing-page h1{
+.landing-page h1 {
     font-size: 60px;
     text-align: center;
 }
 
-.landing-page p{
+.landing-page p {
     font-size: 20px;
     text-align: center;
-}
-
-.landing-page a{
-    text-decoration: none;
-    color: white;
-    position: absolute;
-    bottom: 160px;
-}
-
-.landing-page a:hover {
-    color: #333;
 }
 
 .js {
     color: yellow;
 }
-  
+
 .typed-text {
     color: #20c20e;
 }
-  
+
 .cursor {
     background: #20c20e;
 }
@@ -156,7 +224,7 @@ header.top-header.scrolled {
     transition: ease-in;
     animation: bounce 1.5s infinite;
 }
-  
+
 .arrow:before {
     content: "";
     position: absolute;
@@ -168,7 +236,7 @@ header.top-header.scrolled {
     border-bottom: 2px solid #fafafa;
     transform: rotate(-45deg);
 }
-  
+
 @keyframes bounce {
     0% {
       transform: translate(0);
@@ -180,28 +248,17 @@ header.top-header.scrolled {
       transform: translate(0);
     }
 }
-  
-@-webkit-keyframes bounce {
-    0% {
-      transform: translate(0);
-    }
-    20% {
-      transform: translateY(15px);
-    }
-    40% {
-      transform: translate(0);
-    }
-}
-  
+
 .fade-in {
     opacity: 1;
     transition: 1s all ease-in;
 }
-  
+
 .fade-out {
     opacity: 0;
     transition: 1s all ease-out;
 }
+
 
 
 /* ------------- Section des compétences ------------ */
@@ -363,14 +420,23 @@ header.top-header.scrolled {
 }
 
 
+/* Styles pour les petits écrans */
+@media (max-width: 768px) {
+    .skill {
+        width: 80%; /* Ajuste la largeur des cartes */
+    }
 
+    .skill-summary {
+        white-space: normal; /* Permet au texte de s'afficher sur plusieurs lignes */
+    }
+}
 
 
 
 /* ------------------------------- Parcours et CV -------------------------------------- */
 
 .experiences{
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .content {
@@ -549,6 +615,24 @@ header h2 {
 /* JavaScript */
 .content-container-2.toggle {
     display: block;
+}
+
+/* Styles pour les petits écrans */
+@media (max-width: 768px) {
+    .about {
+        flex-direction: column; /* Empile l'image et le texte verticalement */
+        text-align: center; /* Centre le texte */
+    }
+
+    .about img {
+        max-width: 50%; /* Ajuste la taille de l'image */
+        margin: 0 auto 20px; /* Centre l'image et ajoute un espace en bas */
+    }
+
+    .container {
+        width: 90%;
+        margin: 0 auto;
+    }
 }
 
 

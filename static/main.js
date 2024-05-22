@@ -43,21 +43,42 @@ function erase() {
 
 // ---------------------- Fonction pour le traitement de la navbar ------------------------
 
-const navBar = document.querySelector('.top-header');
+document.addEventListener("DOMContentLoaded", function() {
+  const navBar = document.querySelector('.top-header');
+  const hamburger = document.querySelector(".hamburger");
+  const nav = document.querySelector(".nav");
+  const hamburgerBars = document.querySelectorAll('.bar');
 
-window.addEventListener('scroll', () => {
-    const scrollPosition = window.scrollY;
-    
-    const skillsSection = document.querySelector('.arrow');
-    const skillsSectionPosition = skillsSection.offsetTop;
-    
-    if (scrollPosition >= skillsSectionPosition) {
-        navBar.classList.add('scrolled');
-    } else {
-        navBar.classList.remove('scrolled');
-    }
+  // Gérer le scroll pour ajouter/retirer la classe 'scrolled'
+  window.addEventListener('scroll', () => {
+      const scrollPosition = window.scrollY;
+      const skillsSection = document.querySelector('.arrow');
+      const skillsSectionPosition = skillsSection.offsetTop;
+
+      if (scrollPosition >= skillsSectionPosition) {
+          navBar.classList.add('scrolled');
+          hamburgerBars.forEach(bar => bar.classList.add('scrolled'));
+      } else {
+          navBar.classList.remove('scrolled');
+          hamburgerBars.forEach(bar => bar.classList.remove('scrolled'));
+      }
+  });
+
+  // Gérer le clic sur le bouton hamburger
+  hamburger.addEventListener("click", function(event) {
+      nav.classList.toggle("show");
+      hamburgerBars.forEach(bar => bar.classList.toggle('active'));
+      event.stopPropagation(); // Empêche le clic de se propager au document
+  });
+
+  // Fermer le menu en cliquant en dehors
+  window.addEventListener("click", function(event) {
+      if (!nav.contains(event.target) && !hamburger.contains(event.target)) {
+          nav.classList.remove("show");
+          hamburgerBars.forEach(bar => bar.classList.remove('active'));
+      }
+  });
 });
-
 
 
 
