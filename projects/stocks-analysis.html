@@ -4,27 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/projects/static/projects-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <title>Stocks Analysis</title>
 </head>    
     
     <body>
+
         <div class="container">
             <header id="header">
-                <h1>Analyse des Composants d'un indice</h1>
+              <a href="/index.html" class="nav-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                  <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+                </svg> Revenir au Portfolio
+              </a>
+              <h1>Analyse des Composants d'un indice</h1>
             </header>
     
             <section>
-                <h2>Introduction</h2>
                 <p>Ce projet a pour objectif d'analyser les composants de l'un indice, ici Nasdaq-100 en utilisant des 
                     données fondamentales et plusieurs stratégies d'investissement. Les différentes étapes du projet 
                     incluent la récupération des tickers des composants de l'indice, la collecte des données 
                     fondamentales pour chaque ticker, et l'analyse de ces données selon diverses stratégies définies 
                     dans un fichier JSON.
                 </p>
+                <p class="cta-paragraph">
+                  N'hésitez pas à consulter les différentes étapes, voir le projet sur Github, me poser des questions
+                  et/ou suggérer des améliorations !
+                </p>
             </section>
+
     
-            <section>
-                <h2>Installation des Bibliothèques nécessaires et import</h2>
+            <details>
+                <summary><h2>Installation des Bibliothèques nécessaires et import</h2></summary>
                 <p>Avant de commencer, assurez-vous d'installer les bibliothèques Python nécessaires en exécutant 
                     la commande suivante :
                 </p>
@@ -38,10 +50,10 @@ import json
 from sklearn.preprocessing import StandardScaler
                     </code></pre>
                 </p>
-            </section>
+            </details>
     
-            <section>
-                <h2>Récupération des Composants de l'indice</h2>
+            <details>
+                <summary><h2>Récupération des Composants de l'indice</h2></summary>
                 <p>La première étape consiste à récupérer les tickers des composants de l'indice choisi à 
                     partir de Wikipedia ou tout plateforme les possédant :
                     
@@ -73,16 +85,16 @@ def get_components():
                     À la fin, la fonction retourne une liste contenant tous les tickers qui nous serviront à télécharger
                     les données "en masse", nécessaires pour chaque ticker.
                 </p>
-            </section>
+            </details>
     
-            <section>
-                <h2>Collecte des Données Fondamentales</h2>
-                <p>Pour chaque ticker, les fonctions <code>get_fundamental_data(ticker)</code> 
-                    et <code>collect_data(tickers)</code> utilise l'API de <code>yfinance</code> pour télécharger les données fondamentales. 
-                    Ces données incluent des informations générales sur chaque entreprise.
-                </p>
+            <details>
+              <summary><h2>Collecte des Données Fondamentales</h2></summary>
+              <p>Pour chaque ticker, les fonctions <code>get_fundamental_data(ticker)</code> 
+                  et <code>collect_data(tickers)</code> utilise l'API de <code>yfinance</code> pour télécharger les données fondamentales. 
+                  Ces données incluent des informations générales sur chaque entreprise.
+              </p>
 
-                <pre><code>
+              <pre><code>
 # Fonction pour télécharger les données fondamentales
 def get_fundamental_data(ticker):
     stock = yf.Ticker(ticker)
@@ -104,34 +116,34 @@ def collect_data(tickers):
         except Exception as e:
             print(f"Erreur lors de la collecte des données de {ticker}: {e}")
     return data
-                </code></pre>
-                <p>
-                    La première fonction <code>get_fundamental_data(ticker)</code> prendra le ticker en entrée
-                    et fournira en retour un dictionnaire contenant les infos de celui-ci. Il faut savoir qu'il est possible
-                    d'obtenir d'autres données comme celles liées : 
-                    <ul>
-                        <li>Aux actions avec <code>stock.actions</code></li>
-                        <li>Aux dividendes avec <code>stock.dividends</code></li>
-                        <li>Données de marché (OHLCV) avec <code>stock.history</code></li>
-                        <li>Et bien d'autres données très intéressantes...</li>
-                    </ul>
+              </code></pre>
+              <p>
+                  La première fonction <code>get_fundamental_data(ticker)</code> prendra le ticker en entrée
+                  et fournira en retour un dictionnaire contenant les infos de celui-ci. Il faut savoir qu'il est possible
+                  d'obtenir d'autres données comme celles liées : 
+                  <ul>
+                      <li>Aux actions avec <code>stock.actions</code></li>
+                      <li>Aux dividendes avec <code>stock.dividends</code></li>
+                      <li>Données de marché (OHLCV) avec <code>stock.history</code></li>
+                      <li>Et bien d'autres données très intéressantes...</li>
+                  </ul>
 
-                    Afin d'avoir toutes les possibilités, je vous invite à consulter <a target="_blank" href="https://pypi.org/project/yfinance/">Yfinance</a>.
-                </p>
-                <p>
-                    La fonction <code>collect_data(tickers)</code> se servira de la première pour renvoyer pour chaque
-                    ticker, une liste contenant les données fondamentales.
-                </p>
+                  Afin d'avoir toutes les possibilités, je vous invite à consulter <a target="_blank" href="https://pypi.org/project/yfinance/">Yfinance</a>.
+              </p>
+              <p>
+                  La fonction <code>collect_data(tickers)</code> se servira de la première pour renvoyer pour chaque
+                  ticker, une liste contenant les données fondamentales.
+              </p>
 
 
-            </section>
+            </details>
     
-            <section>
-                <h2>Analyse des Données Fondamentales</h2>
-                <p> Ici les choses deviennent intéressantes. Les données fondamentales collectées sont ensuite 
-                    analysées selon plusieurs critères définis dans des stratégies (nous y reviendrons plus tard). 
+            <details>
+              <summary><h2>Analyse des Données Fondamentales</h2></summary>
+              <p> Ici les choses deviennent intéressantes. Les données fondamentales collectées sont ensuite 
+                  analysées selon plusieurs critères définis dans des stratégies (nous y reviendrons plus tard). 
                     
-                    <pre><code>
+                  <pre><code>
 # Fonction pour analyser les données fondamentales et attribuer un score selon une stratégie
 def analyze_fundamentals(data, strategy):
     criteria_list = list(strategy.keys())
@@ -161,20 +173,20 @@ def analyze_fundamentals(data, strategy):
     df['Score'] = sum(df[criterion] * weight for criterion, weight in weights.items())
     
     return df
-                    </code></pre>
+                  </code></pre>
                     
-                    La fonction <code>analyze_fundamentals(data, strategy)</code> normalise 
-                    les données, applique des poids aux différents critères et calcule un score pour chaque ticker 
-                    en fonction de la stratégie choisie.</p>
-            </section>
+                  La fonction <code>analyze_fundamentals(data, strategy)</code> normalise 
+                  les données, applique des poids aux différents critères et calcule un score pour chaque ticker 
+                  en fonction de la stratégie choisie.</p>
+            </details>
     
-            <section>
-                <h2>Analyse Globale</h2>
-                <p>La fonction <code>global_analysis(strategies)</code> coordonne l'ensemble du processus en récupérant les tickers, 
-                    collectant les données et appliquant les différentes stratégies d'analyse. Les résultats de chaque stratégie 
-                    sont sauvegardés dans des fichiers CSV distincts.
+            <details>
+              <summary><h2>Analyse Globale</h2></summary>  
+              <p>La fonction <code>global_analysis(strategies)</code> coordonne l'ensemble du processus en récupérant les tickers, 
+                  collectant les données et appliquant les différentes stratégies d'analyse. Les résultats de chaque stratégie 
+                  sont sauvegardés dans des fichiers CSV distincts.
 
-                    <pre><code>
+                  <pre><code>
 # Fonction principale pour analyser les composants de l'indice selon plusieurs stratégies
 def global_analysis(strategies):
     tickers = get_components()
@@ -187,21 +199,68 @@ def global_analysis(strategies):
         print(f"Résultats de l'analyse pour la stratégie '{strategy_name}' enregistrés dans {index}/{strategy_name}.csv")
                     </code></pre>
 
-                </p>
-            </section>
+              </p>
+            </details>
     
-            <section>
-                <h2>Stratégies d'Analyse</h2>
-                <p>Les stratégies d'analyse sont chargées à partir d'un fichier JSON situé à l'adresse 
-                    <code>data/utils/strategies.json</code> de notre dossier. Chaque stratégie spécifie des critères 
-                    et des poids différents pour l'analyse des données fondamentales
-                    <button id="showStrategiesBtn">Voir les Stratégies</button>.
-                </p>
-                <p>
-                    Bien-sûr il est possible de modifier les stratégies et les poids ou d'en rajouter pour les adapter à vos besoins.
-                    Ici, ce sont des stratégies effectuées sur la base de mes recherches <button id="openModalBtn">Voir les Données</button>.
-                </p>
-            </section>
+            <details>
+              <summary><h2>Stratégies d'Analyse et possibilités</h2></summary>  
+              <p>Les stratégies d'analyse sont chargées à partir d'un fichier JSON situé à l'adresse 
+                  <code>data/utils/strategies.json</code> de notre dossier. Chaque stratégie spécifie des critères 
+                  et des poids différents pour l'analyse des données fondamentales
+                  <button id="showStrategiesBtn">Voir les Stratégies</button>.
+              </p>
+              <p>
+                  Bien-sûr il est possible de modifier les stratégies et les poids ou d'en rajouter pour les adapter à vos besoins.
+                  Ici, ce sont des stratégies effectuées sur la base de mes recherches <button id="openModalBtn">Voir les Données</button>.
+              </p>
+              <p>
+                  À la fin ce script va nous donner des csv pour chaque stratégie avec le score de chaque ticker. À partir de là,
+                  nous pouvons utiliser notre imagination et s'en servir pour par exemple créer des portefeuilles en fonction de notre profil
+                  d'investissement :
+
+              </p>
+              <div class="graphs">
+                <div class="graph-item">
+                    <h2>RENDMENT</h2>
+                    <canvas id="rendementChart" width="200" height="200"></canvas>
+                    <p>Maximiser le retour sur investissement via les dividendes, les gains en capital, et 
+                      les cryptomonnaies.
+                    </p>
+                </div>
+                <div class="graph-item">
+                    <h2>CROISSANCE</h2>
+                    <canvas id="croissanceChart" width="200" height="200"></canvas>
+                    <p>
+                      Investir dans des entreprises et des cryptomonnaies avec un fort potentiel de croissance.
+                    </p>
+                </div>
+                <div class="graph-item">
+                    <h2>SÉCURITÉ</h2>
+                    <canvas id="securiteChart" width="200" height="200"></canvas>
+                    <p>
+                      Investir dans des entreprises financièrement solides avec un risque minimal, 
+                      tout en ayant une petite exposition aux cryptomonnaies pour le potentiel de rendement.
+                    </p>
+                </div>
+                <div class="graph-item">
+                    <h2>RISQUE/RENDEMENT</h2>
+                    <canvas id="risqueRendementChart" width="200" height="200"></canvas>
+                    <p>
+                      Maximiser les rendements en acceptant des niveaux de risque élevés, incluant 
+                      une forte exposition aux cryptomonnaies.
+                    </p>
+                </div>
+                <div class="graph-item">
+                    <h2>DIVERSIFICATION</h2>
+                    <canvas id="diversificationChart" width="200" height="200"></canvas>
+                    <p>
+                      Diversifier les investissements pour minimiser les risques tout en maximisant 
+                      les opportunités de rendement, y compris les cryptomonnaies.
+                    </p>
+                </div>
+              </div>
+
+            </details>
             
             <!-- Modal pour afficher les stratégies -->
             <div id="strategiesModal" class="modal">
@@ -216,7 +275,7 @@ def global_analysis(strategies):
             <div id="csvModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <h2>Données CSV</h2>
+                    <h2>Données stratégies</h2>
                     <div class="table-responsive">
                         <table border="1" class="dataframe table table-striped table-bordered">
                             <thead>
@@ -387,8 +446,18 @@ def global_analysis(strategies):
             </div>
 
             <footer>
-                <a href="#header">Revenir au début</a>
-                <a href="http://">Voir le projet sur Github</a>
+              <a href="#header" class="nav-link"> Go to Top
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-circle-fill" viewBox="0 0 16 16">
+                  <path d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"/>
+                </svg>
+              </a>
+              
+              <a href="http://" class="nav-link"> See on Github
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                </svg>
+              </a>
+
             </footer>
         </div>
         <script src="/projects/static/projects-functions.js"></script>
