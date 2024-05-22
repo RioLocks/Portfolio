@@ -357,8 +357,8 @@ header.top-header.scrolled {
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 50px 0;
     justify-content: center;
-    margin-left: 150px;
-    margin-right: 150px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .card {
@@ -631,7 +631,7 @@ header h2 {
     }
 
     .container {
-        width: 90%;
+        width: 80%;
         margin: 0 auto;
     }
 }

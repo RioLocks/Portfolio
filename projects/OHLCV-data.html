@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/projects/static/projects-styles.css">
+    <title>OHLCV Crypto data</title>
+    <style>
+        body{
+            background-image: url("https://media.istockphoto.com/id/1463455851/photo/cryptocurrency-market-financial-data-and-candlesticks-internet-banking.webp?b=1&s=170667a&w=0&k=20&c=-vY_0E0xx9ZNF87VSNRakCbLaUkwpe0FpEtQgy_68xU=");
+            background-size: cover;
+            background-attachment: fixed;
+          
+          }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <header id="header">
+          <a href="/index.html" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+              <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+            </svg> Go back
+          </a>
+          <h1>Acquisition des données OHLCV crypto depuis un exchange</h1>
+        </header>
+
+        <section>
+            <p>Ce projet a pour objectif de récupérer et d'analyser des données OHLCV (Open, High, Low, Close, Volume) pour les cryptomonnaies à partir d'un exchange en utilisant l'API CCXT. Les différentes étapes incluent la configuration des bibliothèques, la récupération des paires de trading actives, et l'enregistrement des données OHLCV dans des fichiers CSV.
+            </p>
+            <p class="cta-paragraph">
+              N'hésitez pas à consulter les différentes étapes, voir le projet sur Github, me poser des questions
+              et/ou suggérer des améliorations !
+            </p>
+        </section>
+
+        <details>
+            <summary><h2>Installation des Bibliothèques nécessaires et import</h2></summary>
+            <p>Avant de commencer, assurez-vous d'installer les bibliothèques nécessaires en exécutant 
+                la commande suivante :
+            </p>
+            <pre><code>npm install ccxt fs csv-writer</code></pre>
+            <p>Puis, il faut créer un fichier par exemple <code>app.js</code> et commencer par les importer :
+                <pre><code>
+const ccxt = require('ccxt');
+const fs = require('fs');
+const createCsvWriter = require('csv-writer').createArrayCsvWriter;
+const chemin_rel = 'database\\exchange_limit.json';
+const exchange_limit = JSON.parse(fs.readFileSync(chemin_rel, 'utf8'));
+const chemin_rel_tf = 'database\\tf_ms.json';
+const tf_ms = JSON.parse(fs.readFileSync(chemin_rel_tf, 'utf8'));
+                </code></pre>
+            </p>
+        </details>
+
+        <details>
+            <summary><h2>Fonctions Utilitaires</h2></summary>
+            
+            <p>Ces fonctions utilitaires permettent de convertir des dates en timestamps, de récupérer la date UTC actuelle et d'éliminer les doublons de timestamps.</p>
+            
+            <h3>Conversion de date en timestamp</h3>
+            <p><strong>Objectif :</strong> Convertir une date au format <code>DD-MM-YYYY</code> en un timestamp, qui représente le nombre de millisecondes écoulées depuis le 1er janvier 1970 à minuit UTC.</p>
+            <p><strong>Concepts :</strong> La manipulation des dates en programmation et la conversion en timestamps.</p>
+            <p><strong>Comment ça marche :</strong></p>
+            <ul>
+                <li>La date d'entrée (<code>my_date</code>) est une chaîne de caractères au format <code>DD-MM-YYYY</code>.</li>
+                <li>La méthode <code>split("-")</code> divise la chaîne en un tableau de sous-chaînes : <code>[DD, MM, YYYY]</code>.</li>
+                <li><code>Date.UTC(year, monthIndex, day)</code> crée une date en UTC en utilisant les parties de la date. Notez que le mois commence à 0 (janvier) et non 1.</li>
+                <li><code>newDate.getTime()</code> retourne le timestamp correspondant.</li>
+            </ul>
+            <pre><code>
+        function date_to_timestamp(my_date) {
+            my_date = my_date.split("-");
+            let newDate = new Date(Date.UTC(my_date[2], my_date[1] - 1, my_date[0]));
+            return newDate.getTime();
+        }
+            </code></pre>
+        
+            <h3>Conversion de timestamp en date lisible</h3>
+            <p><strong>Objectif :</strong> Convertir un timestamp en une chaîne de caractères lisible au format <code>YYYY-MM-DD HH:MM:SS.mmm</code>.</p>
+            <p><strong>Concepts :</strong> L'objet <code>Date</code> en JavaScript pour obtenir des informations détaillées sur une date et une heure spécifiques.</p>
+            <p><strong>Comment ça marche :</strong></p>
+            <ul>
+                <li><code>new Date(my_tf)</code> crée un objet <code>Date</code> à partir du timestamp <code>my_tf</code>.</li>
+                <li>La date est formatée en utilisant des méthodes de l'objet <code>Date</code> comme <code>getUTCFullYear()</code>, <code>getUTCMonth()</code>, etc.</li>
+                <li>Les parties de la date (année, mois, jour, etc.) sont formatées en chaînes et complétées par des zéros si nécessaire pour garantir un format à deux chiffres.</li>
+                <li>Les parties de la date sont combinées en une chaîne complète.</li>
+            </ul>
+            <pre><code>
+        function timestamp_to_date(my_tf) {
+            let my_date = new Date(my_tf);
+            let str_date = `${my_date.getUTCFullYear()}-${("0" + (my_date.getUTCMonth() + 1)).slice(-2)}-${("0" + my_date.getUTCDate()).slice(-2)} ${("0" + my_date.getUTCHours()).slice(-2)}:${("0" + my_date.getUTCMinutes()).slice(-2)}:${("0" + my_date.getUTCSeconds()).slice(-2)}.${("00" + my_date.getUTCMilliseconds()).slice(-3)}`;
+            return str_date;
+        }
+            </code></pre>
+        
+            <h3>Récupération de la date UTC actuelle</h3>
+            <p><strong>Objectif :</strong> Obtenir la date et l'heure actuelles en UTC.</p>
+            <p><strong>Concepts :</strong> Le Temps Universel Coordonné (UTC), un standard international pour le temps.</p>
+            <p><strong>Comment ça marche :</strong></p>
+            <ul>
+                <li><code>new Date()</code> crée un nouvel objet <code>Date</code> avec la date et l'heure actuelles.</li>
+                <li><code>toUTCString()</code> et <code>toISOString()</code> convertissent la date en chaînes de caractères au format UTC (ces lignes ne modifient pas <code>now</code> mais montrent la conversion).</li>
+                <li><code>Math.floor(now)</code> retourne la partie entière de la date en millisecondes.</li>
+            </ul>
+            <pre><code>
+        function current_utc_date() {
+            const now = new Date();
+            now.toUTCString();
+            now.toISOString();
+            return Math.floor(now);
+        }
+            </code></pre>
+        
+            <h3>Élimination des doublons de timestamps</h3>
+            <p><strong>Objectif :</strong> Supprimer les doublons de timestamps dans un tableau de données OHLCV.</p>
+            <p><strong>Concepts :</strong> Les tableaux en JavaScript et la méthode <code>splice</code> pour supprimer des éléments d'un tableau.</p>
+            <p><strong>Comment ça marche :</strong></p>
+            <ul>
+                <li>Initialiser un tableau <code>to_remove</code> pour stocker les indices des éléments à supprimer.</li>
+                <li>Parcourir le tableau <code>arr</code> et comparer chaque élément avec le précédent.</li>
+                <li>Si deux éléments consécutifs ont le même timestamp, l'indice de l'élément actuel est ajouté à <code>to_remove</code>.</li>
+                <li>Parcourir le tableau <code>to_remove</code> en sens inverse pour supprimer les doublons de <code>arr</code> en utilisant <code>splice</code>.</li>
+            </ul>
+            <pre><code>
+        function eliminate_double_ts(arr) {
+            let i, len = arr.length;
+            to_remove = [];
+        
+            for (i = 1; i < len; i++) {
+                if (arr[i][0] === arr[i - 1][0]) {
+                    to_remove.push(i);
+                }
+            }
+            for (i = to_remove.length - 1; i >= 0; i--) {
+                arr.splice(to_remove[i], 1);
+            }
+            return arr;
+        }
+            </code></pre>
+        </details>
+        
+
+        <details>
+            <summary><h2>Récupération des Données OHLCV</h2></summary>
+            
+            <p>Cette fonction récupère les données OHLCV pour une paire de trading spécifique sur une période de temps donnée et les enregistre dans un fichier CSV.</p>
+            
+            <h3>Objectif</h3>
+            <p>Récupérer les données OHLCV (Open, High, Low, Close, Volume) d'une paire de trading depuis un exchange pour une période spécifique, et enregistrer ces données dans un fichier CSV.</p>
+            
+            <h3>Concepts</h3>
+            <ul>
+                <li><strong>OHLCV :</strong> Données de marché qui incluent le prix d'ouverture (Open), le plus haut (High), le plus bas (Low), le prix de clôture (Close) et le volume des transactions (Volume) pour une période donnée.</li>
+                <li><strong>API d'exchange :</strong> Interface pour interagir avec des exchanges de cryptomonnaies comme Binance.</li>
+                <li><strong>Promesses et Async/Await :</strong> Gestion des opérations asynchrones en JavaScript.</li>
+            </ul>
+            
+            <h3>Comment ça marche</h3>
+            <ul>
+                <li>La fonction prend en entrée l'exchange, le nom de la paire de trading, le timeframe, la date de début, la limite de données et la durée en millisecondes pour chaque timeframe.</li>
+                <li>Elle convertit la date de début en timestamp et obtient la date UTC actuelle.</li>
+                <li>Elle génère un tableau de timestamps (`tf_array`) à partir de la date de début jusqu'à la date actuelle, avec des intervalles définis par la limite et la durée du timeframe.</li>
+                <li>Elle fait des requêtes pour récupérer les données OHLCV pour chaque timestamp du tableau.</li>
+                <li>Les données récupérées sont concaténées, triées et les doublons de timestamps sont éliminés.</li>
+                <li>Les données sont ensuite converties en un format lisible et écrites dans un fichier CSV.</li>
+            </ul>
+            
+            <pre><code>
+        async function get_ohlcv(exchange, pair_name, timeframe, since_date, limit, tf_ms) {
+            let exchange_name = exchange.name;
+            console.log(pair_name, exchange_name, timeframe, since_date);
+            let starting_date = date_to_timestamp(since_date);
+            let now = current_utc_date();
+            let tf_array = [starting_date];
+            let last_tf = starting_date;
+            let result_ohlcv = [];
+            let current_request = 0;
+        
+            while (last_tf < now) {
+                last_tf += (limit) * tf_ms;
+                if (last_tf < now) {
+                    tf_array.push(last_tf);
+                }
+            }
+            let total_request = tf_array.length;
+        
+            for (const tf in tf_array) {
+                exchange.fetchOHLCV(symbol = pair_name, timeframe = timeframe, since = tf_array[tf], limit = limit)
+                    .then(resp => {
+                        result_ohlcv = result_ohlcv.concat(resp);
+                        current_request++;
+                    }).catch(err => {
+                        console.log("Error retrieving candles since", tf_array[tf], exchange_name, pair_name, timeframe);
+                        exchange.fetchOHLCV(symbol = pair_name, timeframe = timeframe, since = tf_array[tf], limit = limit)
+                            .then(resp => {
+                                result_ohlcv = result_ohlcv.concat(resp);
+                                current_request++;
+                            }).catch(err2 => {
+                                console.log("Error retrieving candles since", tf_array[tf], exchange_name, pair_name, timeframe);
+                                exchange.fetchOHLCV(symbol = pair_name, timeframe = timeframe, since = tf_array[tf], limit = limit)
+                                    .then(resp => {
+                                        result_ohlcv = result_ohlcv.concat(resp);
+                                        current_request++;
+                                    }).catch(err3 => {
+                                        console.log(err2);
+                                        console.log("/! Fatal Error /!", pair_name, timeframe);
+                                        current_request++;
+                                    })
+                            })
+                    })
+            }
+        
+            const delay = millis => new Promise((resolve, reject) => {
+                setTimeout(_ => resolve(), millis);
+            });
+            while (current_request < total_request) {
+                process.stdout.write(`\rLoading ${current_request}/${total_request} requests | ${result_ohlcv.length} candles loaded`);
+                await delay(2000);
+            }
+            process.stdout.write(`\rLoading ${current_request}/${total_request} requests | ${result_ohlcv.length} candles loaded`);
+            result_ohlcv = result_ohlcv.sort((a, b) => a[0] - b[0]);
+            result_ohlcv = eliminate_double_ts(result_ohlcv);
+        
+            let file_pair = pair_name.replace('/', '');
+            let dirpath = 'C:\\Users\\ricar\\Desktop\\Crypto\\backtest_tools\\database\\' + exchange_name + '/' + 'data_' +timeframe + '/';
+            let filepath = dirpath + file_pair + ".csv";
+        
+            let first_date = timestamp_to_date(result_ohlcv[0][0]);
+        
+            await fs.promises.mkdir(dirpath, {recursive: true});
+        
+            const csvWriter = createCsvWriter({
+                header: ['timestamp', 'open', 'high', 'low', 'close', 'volume'],
+                path: filepath
+            });
+        
+            result_ohlcv.forEach(entry => {
+                entry[0] = timestamp_to_date(entry[0]);
+            });
+        
+            csvWriter.writeRecords(result_ohlcv)
+                .then(() => {
+                    process.stdout.write(`\rSuccessfully downloaded ${result_ohlcv.length} candles since ${first_date} in ${filepath}`);
+                    return true;
+                }).catch(err => {
+                    console.log(err);
+                    return false;
+                });
+        }
+            </code></pre>
+        </details>
+        
+
+        <details>
+            <summary><h2>Récupération des Données OHLCV pour plusieurs paires et timeframes</h2></summary>
+            
+            <p>Cette fonction appelle <code>get_ohlcv</code> pour chaque combinaison de paire de trading et de timeframe.</p>
+            
+            <h3>Objectif</h3>
+            <p>Récupérer les données OHLCV pour plusieurs paires de trading et plusieurs timeframes, en utilisant la fonction <code>get_ohlcv</code> pour chaque combinaison.</p>
+            
+            <h3>Concepts</h3>
+            <ul>
+                <li><strong>OHLCV :</strong> Données de marché qui incluent le prix d'ouverture (Open), le plus haut (High), le plus bas (Low), le prix de clôture (Close) et le volume des transactions (Volume) pour une période donnée.</li>
+                <li><strong>Async/Await :</strong> Gestion des opérations asynchrones en JavaScript pour éviter les blocages et gérer les appels réseau de manière efficace.</li>
+                <li><strong>Boucles imbriquées :</strong> Utilisation de boucles pour parcourir plusieurs listes et exécuter des opérations pour chaque combinaison d'éléments des listes.</li>
+            </ul>
+            
+            <h3>Comment ça marche</h3>
+            <ul>
+                <li>La fonction prend en entrée l'exchange, une liste de paires de trading (<code>pair_list</code>), une liste de timeframes (<code>tf_list</code>), une date de début (<code>start_date</code>), et deux objets JSON contenant des configurations de limites d'exchange et de timeframes.</li>
+                <li>Elle utilise deux boucles imbriquées pour parcourir chaque combinaison de paires et de timeframes.</li>
+                <li>Pour chaque combinaison, elle appelle la fonction <code>get_ohlcv</code> en utilisant <code>await</code> pour gérer les appels asynchrones et garantir que les données sont récupérées avant de passer à la prochaine combinaison.</li>
+            </ul>
+            
+            <pre><code>
+        async function get_multi_ohlcv(exchange, pair_list, tf_list, start_date, exchange_limit_json, tf_ms_json) {
+            for (const tf of tf_list) {
+                for (const pair of pair_list) {
+                    await get_ohlcv(
+                        exchange,
+                        pair,
+                        tf,
+                        start_date,
+                        exchange_limit_json[exchange.name],
+                        tf_ms_json[tf]
+                    );
+                }
+            }
+        }
+            </code></pre>
+        </details>
+        
+
+        <details>
+            <summary><h2>Récupération des paires de trading actives</h2></summary>
+            
+            <p>Cette fonction récupère les paires de trading actives cotées en USDT sur un exchange spécifique (ici, Binance).</p>
+            
+            <h3>Objectif</h3>
+            <p>Récupérer les paires de trading actives (disponibles pour le trading) sur un exchange, en se concentrant sur celles cotées en USDT.</p>
+            
+            <h3>Concepts</h3>
+            <ul>
+                <li><strong>Pairs de trading :</strong> Combinaisons de deux devises (par exemple, BTC/USDT) que l'on peut échanger sur un marché de cryptomonnaies.</li>
+                <li><strong>API d'exchange :</strong> Interface pour interagir avec des exchanges de cryptomonnaies comme Binance.</li>
+                <li><strong>Filtres et transformations :</strong> Utilisation de méthodes comme <code>filter</code> et <code>map</code> pour manipuler et transformer les données.</li>
+            </ul>
+            
+            <h3>Comment ça marche</h3>
+            <ul>
+                <li>La fonction prend en entrée un objet <code>exchange</code> (ici, Binance).</li>
+                <li>Elle utilise la méthode <code>fetchMarkets</code> de l'API CCXT pour récupérer les informations sur toutes les paires de trading disponibles sur l'exchange.</li>
+                <li>Elle filtre les paires pour ne conserver que celles qui sont actives (<code>symbol.active</code>), cotées en USDT (<code>symbol.quote === 'USDT'</code>), et ne se terminant pas par <code>:USDT</code> (pour éviter les paires symboliques).</li>
+                <li>Elle utilise <code>map</code> pour extraire les symboles des paires filtrées.</li>
+                <li>En cas d'erreur lors de la récupération des marchés, elle capture l'exception, affiche un message d'erreur et retourne un tableau vide.</li>
+            </ul>
+            
+            <pre><code>
+        async function get_tradable_pairs(exchange) {
+            try {
+                const exchange_info = await exchange.fetchMarkets();
+                const tradable_pairs = exchange_info
+                    .filter(symbol => symbol.active && symbol.quote === 'USDT' && !symbol.symbol.endsWith(':USDT'))
+                    .map(symbol => symbol.symbol);
+                
+                return tradable_pairs;
+            } catch (error) {
+                console.error('Erreur lors de la récupération des paires de trading:', error);
+                return [];
+            }
+        }
+            </code></pre>
+        </details>
+        
+
+        <details>
+            <summary><h2>Exécution du script</h2></summary>
+            
+            <p>Définition de l'exchange, récupération des paires de trading actives, et récupération des données OHLCV pour les paires et timeframes spécifiés.</p>
+            
+            <h3>Objectif</h3>
+            <p>Configurer l'exchange, récupérer les paires de trading actives, et collecter les données OHLCV pour plusieurs paires de trading et timeframes depuis une date de début spécifiée.</p>
+            
+            <h3>Concepts</h3>
+            <ul>
+                <li><strong>CCXT :</strong> Une bibliothèque JavaScript qui permet d'interagir avec de nombreux exchanges de cryptomonnaies de manière unifiée.</li>
+                <li><strong>Exchange :</strong> Une plateforme où les cryptomonnaies peuvent être échangées.</li>
+                <li><strong>Async/Await et Promises :</strong> Gestion des opérations asynchrones en JavaScript pour gérer les appels API et éviter les blocages.</li>
+            </ul>
+            
+            <h3>Comment ça marche</h3>
+            <ul>
+                <li>Définir l'exchange en utilisant CCXT et activer la limitation de taux pour éviter de dépasser les limites d'appel API.</li>
+                <li>Appeler la fonction <code>get_tradable_pairs</code> pour récupérer les paires de trading actives cotées en USDT sur l'exchange.</li>
+                <li>Définir une liste de timeframes et une date de début pour la collecte des données OHLCV.</li>
+                <li>Appeler la fonction <code>get_multi_ohlcv</code> avec l'exchange, la liste des paires, la liste des timeframes, la date de début, et les paramètres de configuration pour les limites d'exchange et les timeframes.</li>
+                <li>Gérer les erreurs potentielles lors de la récupération des paires de trading avec un bloc <code>catch</code>.</li>
+            </ul>
+            
+            <pre><code>
+        const exchange = new ccxt.binance({ enableRateLimit: true });
+        
+        get_tradable_pairs(exchange).then(pair_list => {
+            const timeframe_list = ['30m', '1h', '2h', '4h', '12h', '1d'];
+            const start_date = "01-01-2020";
+        
+            get_multi_ohlcv(
+                exchange,
+                pair_list,
+                timeframe_list,
+                start_date,
+                exchange_limit,
+                tf_ms
+            );
+        }).catch(error => {
+            console.error('Erreur lors de la récupération des paires de trading:', error);
+        });
+            </code></pre>
+        </details>
+        
+        <details>
+            <summary><h2>Résumé</h2></summary>
+            
+            <h3>Objectifs</h3>
+            <p>Ce script a pour objectif de récupérer les données OHLCV (Open, High, Low, Close, Volume) pour différentes paires de trading depuis un exchange de cryptomonnaies. Les données récupérées sont ensuite enregistrées dans des fichiers CSV pour une analyse ultérieure.</p>
+            
+            <h3>Points importants</h3>
+            <ul>
+                <li><strong>Changer l'exchange :</strong> Par défaut, le script utilise Binance. Vous pouvez facilement le modifier pour un autre exchange supporté par CCXT en changeant la ligne <code>const exchange = new ccxt.binance({ enableRateLimit: true });</code>.</li>
+                <li><strong>Adapter la date de départ :</strong> La date de départ pour la collecte des données est définie par <code>const start_date = "01-01-2020";</code>. Assurez-vous de la modifier en fonction de vos besoins.</li>
+                <li><strong>Adapter les timeframes :</strong> Les timeframes utilisés pour la collecte des données sont spécifiés dans <code>const timeframe_list = ['30m', '1h', '2h', '4h', '12h', '1d'];</code>. Vous pouvez ajuster cette liste pour inclure d'autres timeframes disponibles.</li>
+            </ul>
+            
+            <h3>Idées d'utilisation des données</h3>
+            <p>Une fois les données OHLCV récupérées et enregistrées dans des fichiers CSV, plusieurs analyses et utilisations sont possibles :</p>
+            <ul>
+                <li><strong>Analyse technique :</strong> Utilisez les données pour appliquer des indicateurs techniques (comme les moyennes mobiles, RSI, MACD) et développer des stratégies de trading.</li>
+                <li><strong>Backtesting de stratégies :</strong> Testez des stratégies de trading sur les données historiques pour évaluer leur performance et ajuster les paramètres.</li>
+                <li><strong>Modélisation et prédiction :</strong> Utilisez des techniques d'apprentissage automatique pour modéliser les tendances des prix et prédire les mouvements futurs des marchés.</li>
+                <li><strong>Visualisation des données :</strong> Créez des graphiques et des visualisations interactives pour mieux comprendre les comportements des prix et les volumes de trading.</li>
+                <li><strong>Études de corrélation :</strong> Analysez les corrélations entre différentes paires de trading pour identifier des opportunités d'arbitrage ou des relations de prix.</li>
+            </ul>
+            
+            <p>En adaptant ce script à vos besoins spécifiques et en explorant les données collectées, vous pouvez obtenir des informations précieuses pour vos analyses de trading et vos recherches sur les cryptomonnaies.</p>
+        </details>
+        
+
+        <details>
+            <summary><h2>Bonus</h2></summary>
+            <p>Par défaut ce script ne télécharge les données que jusqu'à un instant T. Cela veut dire que si l'on
+                souhaite avoir les dernières données à jour en permanence, il faut relancer le script avec le dernier 
+                timestamp comme date de départ pour chaque timeframe et paire. Ce n'est pas très pratique.
+            </p>
+            <p>
+                Une possibilité que j'ai envisagé c'est un autre script qui update les données déjà téléchargées
+                jusqu'à l'instant présent. Nous pouvons imaginer l'appeler chaque fois que nous voulons faire des 
+                analyses ou des backtests.
+            </p>
+            <p>
+                Il est aussi possible de le lancer tous les x temps mais, il faut soit avoir la machine en route 
+                en permanence, soit programmer un cronjob ou un script qui fera tourner le script toutes les x minutes.
+                Mais si l'objectif est de faire du trading il vaut mieux choisir de s'abonner à un flux de données dans ce cas
+                plutôt que de chercher à acquérir des données historiques qui sont plus adaptées pour des analyses ou des 
+                backtests.
+            </p>
+
+
+            <h2>Script Python pour update les données</h2>
+            <div class="tabs-container"> 
+                
+                <div class="tab">
+                    <button class="tablinks" onclick="openTab(event, 'Importations')">Importations</button>
+                    <button class="tablinks" onclick="openTab(event, 'Fonctions Utilitaires')">Utilitaires</button>
+                    <button class="tablinks" onclick="openTab(event, 'Actualisation')">Actualisation</button>
+                    <button class="tablinks" onclick="openTab(event, 'OHLCV')">Obtention</button>
+                    <button class="tablinks" onclick="openTab(event, 'Execution')">Execution</button>
+                    <button class="tablinks" onclick="openTab(event, 'Resume')">Résumé</button>
+                </div>
+        
+                <div id="Importations" class="tabcontent">
+                    <h2>Importation des Bibliothèques</h2>
+                    <p>Cette section configure les importations nécessaires :</p>
+                    <pre><code>
+import os
+import asyncio
+import json
+from datetime import datetime, timezone
+import ccxt.async_support as ccxt
+from csv import writer as csv_writer</code></pre>
+                </div>
+        
+                <div id="Fonctions Utilitaires" class="tabcontent">
+                    <h2>Définition des Fonctions Utilitaires</h2>
+                    <p>Ces fonctions utilitaires sont définies pour convertir les timestamps en dates lisibles, convertir les dates en timestamps, et récupérer la dernière date d'un fichier CSV.</p>
+                    
+                    <h3>Objectif</h3>
+                    <p>Convertir des timestamps en dates lisibles, des dates en timestamps, et récupérer la dernière date d'un fichier CSV.</p>
+                    
+                    <h3>Concepts</h3>
+                    <ul>
+                        <li><strong>Fonctions asynchrones :</strong> Permettent d'effectuer des opérations non bloquantes, ce qui est crucial pour les appels réseau.</li>
+                    </ul>
+                    
+                    <h3>Comment ça marche</h3>
+                    <ul>
+                        <li><strong>timestamp_to_date :</strong> Convertit un timestamp en une date lisible au format <code>YYYY-MM-DD HH:MM:SS.mmm</code>.</li>
+                        <li><strong>date_to_timestamp :</strong> Convertit une date au format <code>YYYY-MM-DD HH:MM:SS.mmm</code> en timestamp.</li>
+                        <li><strong>get_last_date :</strong> Lit un fichier CSV et renvoie la dernière date enregistrée. Si le fichier est vide ou introuvable, il renvoie <code>None</code>.</li>
+                    </ul>
+                    
+                    <pre><code>
+async def timestamp_to_date(timestamp):
+    utc_datetime = datetime.fromtimestamp(timestamp / 1000, timezone.utc)
+    return utc_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+async def date_to_timestamp(date_str):
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
+    timestamp = int(dt.replace(tzinfo=timezone.utc).timestamp() * 1000)
+    return timestamp
+
+async def get_last_date(filepath):
+    try:
+        with open(filepath, 'r') as file:
+            lines = file.readlines()
+            if lines:
+                last_line = lines[-1]
+                last_date = last_line.split(',')[0]
+                return last_date
+            else:
+                print(f"Date introuvable dans {filepath}")
+                return None
+    except FileNotFoundError:
+        print(f"Fichier dans le répertoire {filepath} introuvable")
+        return None
+                    </code></pre>
+                </div>
+
+
+                <div id="Actualisation" class="tabcontent">
+                    <h2>Fonction d'Actualisation des Données</h2>
+                    <p>Cette fonction met à jour les données OHLCV en vérifiant si de nouvelles données sont disponibles pour chaque paire de trading et timeframe :</p>
+                    
+                    <h3>Objectif</h3>
+                    <p>Mettre à jour les données OHLCV pour chaque paire de trading et timeframe, et enregistrer les nouvelles données dans des fichiers CSV.</p>
+                    
+                    <h3>Concepts</h3>
+                    <ul>
+                        <li><strong>OHLCV :</strong> Données de marché qui incluent le prix d'ouverture (Open), le plus haut (High), le plus bas (Low), le prix de clôture (Close) et le volume des transactions (Volume) pour une période donnée.</li>
+                        <li><strong>API d'exchange :</strong> Interface pour interagir avec des exchanges de cryptomonnaies comme Binance.</li>
+                        <li><strong>Asynchronous Programming :</strong> Utilisation des fonctions async et await pour gérer les opérations non bloquantes.</li>
+                    </ul>
+                    
+                    <h3>Comment ça marche</h3>
+                    <ul>
+                        <li>La fonction charge les données de timeframes et les limites d'échange depuis des fichiers JSON.</li>
+                        <li>Elle parcourt chaque exchange défini dans les limites d'échange.</li>
+                        <li>Pour chaque exchange, elle parcourt chaque sous-dossier correspondant à un timeframe et chaque fichier dans ces sous-dossiers pour récupérer les données OHLCV.</li>
+                        <li>Elle vérifie si les données sont à jour et, si nécessaire, appelle la fonction <code>get_ohlcv</code> pour récupérer les nouvelles données.</li>
+                    </ul>
+                    
+                    <pre><code>
+async def update_data():
+    tf_ms = json.load(open(r'database\tf_ms.json'))
+    exchange_limit = json.load(open(r'database\exchange_limit.json'))
+
+    for exchange_name in exchange_limit:
+        exchange_name = "binance"
+        exchange = getattr(ccxt, exchange_name)()
+        await exchange.load_markets()
+
+        downloaded_data = False
+
+        for tf_folder in os.listdir(r"C:\Users\ricar\Desktop\VSCodeProjects\Crypto\database\Binance"):
+            tf = tf_folder.split("_")[-1]
+            tf_ms_value = tf_ms[tf]
+            dir_path = f'C:\\Users\\ricar\\Desktop\\VSCodeProjects\\Crypto\\database\\Binance\\{tf_folder}'
+
+            for filename in os.listdir(dir_path):
+                filepath = os.path.join(dir_path, filename)
+                if os.path.isfile(filepath):
+                    symbol = filename.split(".")[0]
+                    symbol_with_usdt = f"{symbol.replace('USDT', '/USDT')}"
+                    last_date_str = await get_last_date(filepath)
+                    if last_date_str is not None:
+                        last_timestamp = await date_to_timestamp(last_date_str)
+                        current_timestamp = int(datetime.now().timestamp() * 1000)
+                        if current_timestamp - last_timestamp > tf_ms_value:
+                            await get_ohlcv(exchange, symbol_with_usdt, tf, last_timestamp, exchange_limit[exchange_name], tf_ms_value, filepath)
+                            downloaded_data = True
+                        else:
+                            print(f'Data for {symbol} on {exchange.id} for timeframe {tf} is up to date. Skipping download.')
+                    else:
+                        print(f'Error: No last date available for {filepath}. Skipping download.')
+
+        await exchange.close()
+
+        if not downloaded_data:
+            print("Aucune nouvelle donnée téléchargée. Arrêt du programme.")
+            return
+
+        await asyncio.sleep(1)
+                    </code></pre>
+                </div>
+                
+                <div id="OHLCV" class="tabcontent">
+                    <h2>Fonction de Récupération des Données OHLCV</h2>
+                    <p>Cette fonction récupère les données OHLCV depuis l'exchange et les enregistre dans un fichier CSV.</p>
+                    
+                    <h3>Objectif</h3>
+                    <p>Récupérer les données OHLCV pour une paire de trading et un timeframe spécifiques, et les enregistrer dans un fichier CSV.</p>
+                    
+                    <h3>Concepts</h3>
+                    <ul>
+                        <li><strong>OHLCV :</strong> Données de marché incluant le prix d'ouverture (Open), le plus haut (High), le plus bas (Low), le prix de clôture (Close) et le volume des transactions (Volume) pour une période donnée.</li>
+                        <li><strong>API d'exchange :</strong> Interface pour interagir avec des exchanges de cryptomonnaies comme Binance.</li>
+                        <li><strong>Asynchronous Programming :</strong> Utilisation des fonctions async et await pour gérer les opérations non bloquantes.</li>
+                        <li><strong>CSV Writing :</strong> Utilisation du module csv pour écrire les données dans un fichier CSV.</li>
+                    </ul>
+                    
+                    <h3>Comment ça marche</h3>
+                    <ul>
+                        <li>La fonction commence par définir un tableau vide pour stocker les données OHLCV.</li>
+                        <li>Elle ajuste la date de début (since_date) pour qu'elle soit alignée avec le début du prochain intervalle de timeframe.</li>
+                        <li>Elle récupère les données OHLCV depuis l'exchange à partir de cette date ajustée.</li>
+                        <li>Les timestamps des données OHLCV sont convertis en dates lisibles.</li>
+                        <li>Les données sont ensuite écrites dans un fichier CSV.</li>
+                    </ul>
+                    
+                    <pre><code>
+async def get_ohlcv(exchange, symbol, timeframe, since_date, limit, tf_ms, filepath):
+    try:
+        result_ohlcv = []
+
+        since_date = since_date + tf_ms
+
+        ohlcv = await exchange.fetch_ohlcv(symbol, timeframe, since_date, limit)
+        for entry in ohlcv:
+            entry[0] = await timestamp_to_date(entry[0])
+            result_ohlcv.append(entry)
+
+        with open(filepath, 'a', newline='') as file:
+            csv_writer_obj = csv_writer(file)
+            csv_writer_obj.writerows(result_ohlcv)
+
+        print(f'Data updated for {symbol} on {exchange.id} for timeframe {timeframe}')
+    except Exception as e:
+        print(f'Error fetching data for {symbol} on {exchange.id} for timeframe {timeframe}: {e}')
+                    </code></pre>
+                </div>
+                
+                <div id="Execution" class="tabcontent">
+                    <h2>Exécution du Script</h2>
+                    <p>La fonction principale pour exécuter le script et mettre à jour les données OHLCV.</p>
+                    
+                    <h3>Objectif</h3>
+                    <p>Exécuter la fonction d'actualisation des données en utilisant asyncio.</p>
+                    
+                    <h3>Concepts</h3>
+                    <ul>
+                        <li><strong>Asyncio :</strong> Une bibliothèque pour écrire du code concurrentiel en utilisant la programmation asynchrone.</li>
+                        <li><strong>Event Loop :</strong> Une boucle d'événements qui gère l'exécution des tâches asynchrones.</li>
+                    </ul>
+                    
+                    <h3>Comment ça marche</h3>
+                    <ul>
+                        <li><code>asyncio.run(update_data())</code> démarre l'exécution de la fonction asynchrone <code>update_data</code>.</li>
+                        <li>La boucle d'événements asyncio gère l'exécution des tâches définies dans <code>update_data</code>, y compris les appels à l'API de l'exchange et la mise à jour des fichiers CSV.</li>
+                    </ul>
+                    
+                    <pre><code>
+                asyncio.run(update_data())
+                    </code></pre>
+                </div>
+
+                <div id="Resume" class="tabcontent">
+                    <h2>Résumé</h2>
+                    
+                    <h3>Objectifs</h3>
+                    <p>Ce script a pour objectif de récupérer les données OHLCV (Open, High, Low, Close, Volume) pour différentes paires de trading depuis un exchange de cryptomonnaies. Les données récupérées sont ensuite enregistrées dans des fichiers CSV pour une analyse ultérieure.</p>
+                    
+                    <h3>Points importants</h3>
+                    <ul>
+                        <li><strong>Changer l'exchange :</strong> Par défaut, le script utilise Binance. Vous pouvez facilement le modifier pour un autre exchange supporté par CCXT en changeant la ligne <code>exchange_name = "binance"</code> dans la fonction <code>update_data</code>.</li>
+                        <li><strong>Adapter la date de départ :</strong> La date de départ pour la collecte des données est définie dynamiquement en fonction de la dernière date enregistrée dans le fichier CSV. Assurez-vous que le format de date dans vos fichiers est correct.</li>
+                        <li><strong>Adapter les timeframes :</strong> Les timeframes utilisés pour la collecte des données sont spécifiés dans le fichier <code>tf_ms.json</code>. Vous pouvez ajuster ce fichier pour inclure d'autres timeframes disponibles.</li>
+                    </ul>
+                    
+                    <h3>Idées d'utilisation des données</h3>
+                    <p>Une fois les données OHLCV récupérées et enregistrées dans des fichiers CSV, plusieurs analyses et utilisations sont possibles :</p>
+                    <ul>
+                        <li><strong>Analyse technique :</strong> Utilisez les données pour appliquer des indicateurs techniques (comme les moyennes mobiles, RSI, MACD) et développer des stratégies de trading.</li>
+                        <li><strong>Backtesting de stratégies :</strong> Testez des stratégies de trading sur les données historiques pour évaluer leur performance et ajuster les paramètres.</li>
+                        <li><strong>Modélisation et prédiction :</strong> Utilisez des techniques d'apprentissage automatique pour modéliser les tendances des prix et prédire les mouvements futurs des marchés.</li>
+                        <li><strong>Visualisation des données :</strong> Créez des graphiques et des visualisations interactives pour mieux comprendre les comportements des prix et les volumes de trading.</li>
+                        <li><strong>Études de corrélation :</strong> Analysez les corrélations entre différentes paires de trading pour identifier des opportunités d'arbitrage ou des relations de prix.</li>
+                    </ul>
+                    
+                    <p>En adaptant ce script à vos besoins spécifiques et en explorant les données collectées, vous pouvez obtenir des informations précieuses pour vos analyses de trading et vos recherches sur les cryptomonnaies.</p>
+                </div>
+   
+            </div>
+        </details>
+
+
+        <footer>
+            <a href="#header" class="nav-link"> Go to Top
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"/>
+              </svg>
+            </a>
+            
+            <a href="https://github.com/RioLocks/GetCryptoOHLCV" target="_blank" class="nav-link"> See on Github
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+              </svg>
+            </a>
+        </footer>
+
+    </div>
+
+
+    <script src="/projects/static/projects-functions.js"></script>
+
+</body>
+</html>
