@@ -1,5 +1,6 @@
 html {
     scroll-behavior: smooth;
+    text-align: justify;
 }
 
 
@@ -330,3 +331,4 @@ footer a{
     overflow: auto; /* Assure que le contenu peut défiler s'il est trop grand */
     box-sizing: border-box; /* Inclut le padding et la bordure dans la taille */
 }
+

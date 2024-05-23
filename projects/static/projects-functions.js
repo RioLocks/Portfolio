@@ -137,7 +137,7 @@ window.onload = function() {
     createChart(diversificationCtx, 'DIVERSIFICATION', diversificationData.labels, diversificationData.data);
 }
 
-
+// Fonction pour la gestion des tabs dans OHLCV DATA
 
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
@@ -153,4 +153,3 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 document.getElementsByClassName('tablinks')[0].click();
-
